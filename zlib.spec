@@ -5,9 +5,12 @@
 %define	lib_name %{name}%{lib_major}
 
 %define build_biarch 0
+%define	biarch_bit 32
 # Enable bi-arch build on ppc64, sparc64 and x86-64
 %ifarch sparc64 x86_64 ppc64
 %define build_biarch 1
+#(peroyvind): On sparc64 compiler defaults to 32 bit, we need to ensure that it uses 64 bit at link time too
+%define	biarch_bit 64
 %endif
 
 %define build_diet 1
@@ -81,7 +84,7 @@ will use the zlib library.
 %build
 mkdir objs
 pushd objs
-  CFLAGS="$RPM_OPT_FLAGS" \
+  CFLAGS="$RPM_OPT_FLAGS" CC="%{__cc} -m%{biarch_bit}" \
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
   %make
   make test
