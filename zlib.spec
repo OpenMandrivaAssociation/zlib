@@ -1,16 +1,16 @@
 %define	name	zlib
 %define	version	1.2.3
-%define release	%mkrel 5
+%define release	%mkrel 6
 %define	lib_major 1
 %define	lib_name %{name}%{lib_major}
 
 %define build_biarch 0
-%define	biarch_bit 32
 # Enable bi-arch build on ppc64, sparc64 and x86-64
-%ifarch sparc64 x86_64 ppc64
+%ifarch sparcv9 sparc64 x86_64 ppc64
 %define build_biarch 1
-#(peroyvind): On sparc64 compiler defaults to 32 bit, we need to ensure that it uses 64 bit at link time too
-%define	biarch_bit 64
+%endif
+%ifarch sparcv9
+%define	_lib	lib64
 %endif
 
 %define build_diet 1
@@ -82,9 +82,14 @@ will use the zlib library.
 #%patch5 -p1 -b .can-2005-2096
 
 %build
+#(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
+RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS| sed -e 's/-m.. //g'`"
 mkdir objs
 pushd objs
-  CFLAGS="$RPM_OPT_FLAGS" CC="%{__cc} -m%{biarch_bit}" \
+  CFLAGS="$RPM_OPT_FLAGS" \
+%if %{build_biarch}
+  CC="%{__cc} -m64" \
+%endif
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
   %make
   make test
@@ -92,7 +97,11 @@ pushd objs
 popd
 
 %if %{build_biarch}
+%ifarch %{sunsparc}
+RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
+%else
 RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags`
+%endif
 mkdir objs32
 pushd objs32
   CFLAGS="$RPM_OPT_FLAGS_32" CC="%{__cc} -m32" \
@@ -133,7 +142,12 @@ ln -s ../../lib/libz.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib/
 %endif
 
 %if %{build_diet}
+#(peroyvind): 32 bit on sparc
+%ifarch %{sunsparc}
+install objsdiet/libz.a $RPM_BUILD_ROOT%{_prefix}/lib/libz-diet.a
+%else
 install objsdiet/libz.a $RPM_BUILD_ROOT%{_libdir}/libz-diet.a
+%endif
 %endif
 
 %clean
@@ -163,5 +177,3 @@ rm -fr $RPM_BUILD_ROOT
 %endif
 %{_includedir}/*
 %{_mandir}/*/*
-
-
