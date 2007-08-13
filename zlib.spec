@@ -1,6 +1,6 @@
 %define	name	zlib
 %define	version	1.2.3
-%define release	%mkrel 6
+%define release	%mkrel 7
 %define	lib_major 1
 %define	lib_name %{name}%{lib_major}
 
@@ -142,12 +142,8 @@ ln -s ../../lib/libz.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib/
 %endif
 
 %if %{build_diet}
-#(peroyvind): 32 bit on sparc
-%ifarch %{sunsparc}
-install objsdiet/libz.a $RPM_BUILD_ROOT%{_prefix}/lib/libz-diet.a
-%else
-install objsdiet/libz.a $RPM_BUILD_ROOT%{_libdir}/libz-diet.a
-%endif
+install -d $RPM_BUILD_ROOT%{_prefix}/lib/dietlibc/lib-%{_arch}
+install objsdiet/libz.a $RPM_BUILD_ROOT%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
 %endif
 
 %clean
@@ -174,6 +170,9 @@ rm -fr $RPM_BUILD_ROOT
 %if %{build_biarch}
 %{_prefix}/lib/*.a
 %{_prefix}/lib/*.so
+%endif
+%if %{build_diet}
+%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
 %endif
 %{_includedir}/*
 %{_mandir}/*/*
