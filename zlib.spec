@@ -1,6 +1,6 @@
 %define	name	zlib
 %define	version	1.2.3
-%define release	%mkrel 7
+%define release	%mkrel 8
 %define	lib_major 1
 %define	lib_name %{name}%{lib_major}
 
@@ -115,7 +115,7 @@ popd
 %if %{build_diet}
 mkdir objsdiet
 pushd objsdiet
-  CFLAGS="$RPM_OPT_FLAGS" CC="diet gcc" \
+  CFLAGS="-Os" CC="diet gcc" \
   ../configure --prefix=%{_prefix}
   %make libz.a
 popd
