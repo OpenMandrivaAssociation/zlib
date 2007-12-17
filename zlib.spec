@@ -30,7 +30,6 @@ BuildRequires:	setarch
 Group:		System/Libraries
 URL:		http://www.gzip.org/zlib/
 License:	BSD
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %if %{build_diet}
 BuildRequires:	dietlibc-devel
 %endif
