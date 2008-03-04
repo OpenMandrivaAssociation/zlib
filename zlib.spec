@@ -1,6 +1,6 @@
 %define	name	zlib
 %define	version	1.2.3
-%define release	%mkrel 8
+%define release	%mkrel 9
 %define	lib_major 1
 %define	lib_name %{name}%{lib_major}
 
