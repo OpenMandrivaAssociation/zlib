@@ -1,6 +1,3 @@
-%define	name	zlib
-%define	version	1.2.3
-%define release	%mkrel 9
 %define	lib_major 1
 %define	lib_name %{name}%{lib_major}
 
@@ -15,25 +12,23 @@
 
 %define build_diet 1
 
-Name:		%{name}
 Summary:	The zlib compression and decompression library
-Version:	%{version}
-Release:	%{release}
+Name:		zlib
+Version:	1.2.3
+Release:	%mkrel 10
+Group:		System/Libraries
+License:	BSD
+URL:		http://www.gzip.org/zlib/
 Source0:	http://prdownloads.sourceforge.net/libpng/%{name}-%{version}.tar.bz2
 Patch0:		zlib-1.2.1-glibc.patch
 Patch1:		zlib-1.2.1-multibuild.patch
 Patch2:		zlib-1.2.2.2-build-fPIC.patch
-#Patch3:	zlib-1.1.4-gzprintf.patch.bz2
 Patch4:		zlib-1.2.1.1-deb-alt-inflate.patch
-#Patch5:                zlib-1.2.2.2-CAN-2005-2096.patch
 BuildRequires:	setarch
-Group:		System/Libraries
-URL:		http://www.gzip.org/zlib/
-License:	BSD
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %if %{build_diet}
 BuildRequires:	dietlibc-devel
 %endif
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 The zlib compression library provides in-memory compression and
@@ -73,13 +68,12 @@ Install the zlib-devel package if you want to develop applications that
 will use the zlib library.
 
 %prep
+
 %setup -q
 %patch0 -p1
 %patch1 -p1 -b .multibuild
 %patch2 -p1 -b .build-fPIC
-#%patch3 -p1 -b .gzprintf
 %patch4 -p1 -b .deb-alt-inflate
-#%patch5 -p1 -b .can-2005-2096
 
 %build
 #(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
@@ -122,35 +116,37 @@ popd
 %endif
 
 %install
-rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/%{_prefix}
-install -d $RPM_BUILD_ROOT/%{_libdir}
+rm -rf %{buildroot}
 
-make install -C objs prefix=$RPM_BUILD_ROOT%{_prefix} libdir=$RPM_BUILD_ROOT%{_libdir}
+install -d %{buildroot}/%{_prefix}
+install -d %{buildroot}/%{_libdir}
+
+make install -C objs prefix=%{buildroot}%{_prefix} libdir=%{buildroot}%{_libdir}
 %if %{build_biarch}
-make install-libs -C objs32 prefix=$RPM_BUILD_ROOT%{_prefix}
+make install-libs -C objs32 prefix=%{buildroot}%{_prefix}
 %endif
 
-install -d $RPM_BUILD_ROOT/%{_lib}
-mv $RPM_BUILD_ROOT%{_libdir}/*.so.* $RPM_BUILD_ROOT/%{_lib}/
-ln -s ../../%{_lib}/libz.so.%{version} $RPM_BUILD_ROOT%{_libdir}/
+install -d %{buildroot}/%{_lib}
+mv %{buildroot}%{_libdir}/*.so.* %{buildroot}/%{_lib}/
+ln -s ../../%{_lib}/libz.so.%{version} %{buildroot}%{_libdir}/
 
 %if %{build_biarch}
-install -d $RPM_BUILD_ROOT/lib
-mv $RPM_BUILD_ROOT%{_prefix}/lib/*.so.* $RPM_BUILD_ROOT/lib/
-ln -s ../../lib/libz.so.%{version} $RPM_BUILD_ROOT%{_prefix}/lib/
+install -d %{buildroot}/lib
+mv %{buildroot}%{_prefix}/lib/*.so.* %{buildroot}/lib/
+ln -s ../../lib/libz.so.%{version} %{buildroot}%{_prefix}/lib/
 %endif
 
 %if %{build_diet}
-install -d $RPM_BUILD_ROOT%{_prefix}/lib/dietlibc/lib-%{_arch}
-install objsdiet/libz.a $RPM_BUILD_ROOT%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
+install -d %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_arch}
+install objsdiet/libz.a %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
 %endif
 
-%clean
-rm -fr $RPM_BUILD_ROOT
-
 %post -n %{lib_name} -p /sbin/ldconfig
+
 %postun -n %{lib_name} -p /sbin/ldconfig
+
+%clean
+rm -fr %{buildroot}
 
 %files -n %{lib_name}
 %defattr(-, root, root)
