@@ -15,7 +15,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.3
-Release:	%mkrel 12
+Release:	%mkrel 13
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
