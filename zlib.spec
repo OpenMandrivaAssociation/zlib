@@ -67,8 +67,16 @@ library.
 Install the zlib-devel package if you want to develop applications that
 will use the zlib library.
 
-%prep
+%package -n	%{lib_name}-uclibc-devel
+Summary:	Static library for linking against uClibc
+Group:		Development/Libraries
+Requires:	%{lib_name}-devel = %{version}-%{release}
+Requires:	%mklibname uClibc -d -s
 
+%description -n	%{lib_name}-uclibc-devel
+This package contains a static library for linking against uClibc.
+
+%prep
 %setup -q
 %patch0 -p1
 %patch1 -p1 -b .multibuild
@@ -170,8 +178,11 @@ rm -fr %{buildroot}
 %{_prefix}/lib/*.a
 %{_prefix}/lib/*.so
 %endif
+%{_includedir}/*
+%{_mandir}/*/*
+
+%files -n %{lib_name}-uclibc-devel
+%defattr(-, root, root)
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.a
 %endif
-%{_includedir}/*
-%{_mandir}/*/*
