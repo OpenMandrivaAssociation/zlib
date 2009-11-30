@@ -146,6 +146,8 @@ ln -s ../../lib/libz.so.%{version} %{buildroot}%{_prefix}/lib/
 
 %if %{with uclibc}
 install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
+install -d %{buildroot}%{uclibc_root}%{_includedir}
+ln -s %{_includedir}/{zconf,zlib}.h %{buildroot}%{uclibc_root}%{_includedir}/
 %endif
 
 %if %mdkversion < 200900
@@ -181,8 +183,9 @@ rm -fr %{buildroot}
 %{_includedir}/*
 %{_mandir}/*/*
 
+%if %{with uclibc}
 %files -n %{lib_name}-uclibc-devel
 %defattr(-, root, root)
-%if %{with uclibc}
+%{uclibc_root}%{_includedir}/*.h
 %{uclibc_root}%{_libdir}/libz.a
 %endif
