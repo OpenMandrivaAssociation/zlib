@@ -108,7 +108,7 @@ popd
 %if %{with uclibc}
 mkdir objsuclibc
 pushd objsuclibc
-  CFLAGS="%{optflags} -Os" CC="%{uclibc_cc}" \
+  CFLAGS="%{optflags} -Os -g0" CC="%{uclibc_cc}" \
   ../configure --prefix=%{_prefix}
   %make libz.a
 popd
@@ -121,7 +121,7 @@ RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags`
 %endif
 mkdir objsuclibc32
 pushd objsuclibc32
-  CFLAGS="$RPM_OPT_FLAGS_32 -Os" CC="%{uclibc_cc} -m32" \
+  CFLAGS="$RPM_OPT_FLAGS_32 -Os -g0" CC="%{uclibc_cc} -m32" \
   ../configure --prefix=%{_prefix}
   %make libz.a
 popd
