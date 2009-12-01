@@ -67,15 +67,6 @@ library.
 Install the zlib-devel package if you want to develop applications that
 will use the zlib library.
 
-%package -n	%{lib_name}-uclibc-devel
-Summary:	Static library for linking against uClibc
-Group:		Development/Libraries
-Requires:	%{lib_name}-devel = %{version}-%{release}
-Requires:	%mklibname uClibc -d -s
-
-%description -n	%{lib_name}-uclibc-devel
-This package contains a static library for linking against uClibc.
-
 %prep
 %setup -q
 %patch0 -p1
@@ -121,6 +112,21 @@ pushd objsuclibc
   ../configure --prefix=%{_prefix}
   %make libz.a
 popd
+
+%if %{build_biarch}
+%ifarch %{sunsparc}
+RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
+%else
+RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags`
+%endif
+mkdir objsuclibc32
+pushd objsuclibc32
+  CFLAGS="$RPM_OPT_FLAGS_32 -Os" CC="%{uclibc_cc} -m32" \
+  ../configure --prefix=%{_prefix}
+  %make libz.a
+popd
+%endif
+
 %endif
 
 %install
@@ -146,6 +152,9 @@ ln -s ../../lib/libz.so.%{version} %{buildroot}%{_prefix}/lib/
 
 %if %{with uclibc}
 install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
+%if %{build_biarch}
+install -m644 objsuclibc32/libz.a -D %{buildroot}%{uclibc_root}%{_prefix}/lib/libz.a
+%endif
 install -d %{buildroot}%{uclibc_root}%{_includedir}
 ln -s %{_includedir}/{zconf,zlib}.h %{buildroot}%{uclibc_root}%{_includedir}/
 %endif
@@ -174,6 +183,7 @@ rm -fr %{buildroot}
 %files -n %{lib_name}-devel
 %defattr(-, root, root)
 %doc README ChangeLog algorithm.txt
+%{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
 %{_libdir}/*.so
 %if %{build_biarch}
@@ -181,11 +191,10 @@ rm -fr %{buildroot}
 %{_prefix}/lib/*.so
 %endif
 %{_includedir}/*
-%{_mandir}/*/*
-
 %if %{with uclibc}
-%files -n %{lib_name}-uclibc-devel
-%defattr(-, root, root)
-%{uclibc_root}%{_includedir}/*.h
 %{uclibc_root}%{_libdir}/libz.a
+%if %{build_biarch}
+%{uclibc_root}%{_prefix}/lib/libz.a
+%endif
+%{uclibc_root}%{_includedir}/*.h
 %endif
