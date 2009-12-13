@@ -155,8 +155,6 @@ install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
 %if %{build_biarch}
 install -m644 objsuclibc32/libz.a -D %{buildroot}%{uclibc_root}%{_prefix}/lib/libz.a
 %endif
-install -d %{buildroot}%{uclibc_root}%{_includedir}
-ln -s %{_includedir}/{zconf,zlib}.h %{buildroot}%{uclibc_root}%{_includedir}/
 %endif
 
 %if %mdkversion < 200900
@@ -196,5 +194,4 @@ rm -fr %{buildroot}
 %if %{build_biarch}
 %{uclibc_root}%{_prefix}/lib/libz.a
 %endif
-%{uclibc_root}%{_includedir}/*.h
 %endif
