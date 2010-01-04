@@ -11,6 +11,7 @@
 %endif
 
 %bcond_without uclibc
+%bcond_without dietlibc
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
@@ -27,6 +28,9 @@ Patch4:		zlib-1.2.1.1-deb-alt-inflate.patch
 BuildRequires:	setarch
 %if %{with uclibc}
 BuildRequires:	uClibc-devel
+%endif
+%if %{with dietlibc}
+BuildRequires:	dietlibc-devel
 %endif
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
@@ -105,6 +109,15 @@ pushd objs32
 popd
 %endif
 
+%if %{with dietlibc}
+mkdir objsdietlibc
+pushd objsdietlibc
+  CFLAGS="-Os" CC="diet gcc" \
+  ../configure --prefix=%{_prefix}
+  %make libz.a
+popd
+%endif
+
 %if %{with uclibc}
 mkdir objsuclibc
 pushd objsuclibc
@@ -150,6 +163,10 @@ mv %{buildroot}%{_prefix}/lib/*.so.* %{buildroot}/lib/
 ln -s ../../lib/libz.so.%{version} %{buildroot}%{_prefix}/lib/
 %endif
 
+%if %{with dietlibc}
+install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
+%endif
+
 %if %{with uclibc}
 install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
 %if %{build_biarch}
@@ -189,6 +206,9 @@ rm -fr %{buildroot}
 %{_prefix}/lib/*.so
 %endif
 %{_includedir}/*
+%if %{with dietlibc}
+%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
+%endif
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.a
 %if %{build_biarch}
