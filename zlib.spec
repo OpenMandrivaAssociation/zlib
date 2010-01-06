@@ -16,7 +16,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.3
-Release:	%mkrel 14
+Release:	%mkrel 15
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -47,6 +47,10 @@ Summary:	The zlib compression and decompression library
 Group:		System/Libraries
 Obsoletes:	libz, libz1, %{name}
 Provides:	libz = %{version}-%{release} libz1 = %{version}-%{release} %{name} = %{version}-%{release}
+%if %{with uclibc}
+Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{release}
+Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
+%endif 
 
 %description -n	%{lib_name}
 The zlib compression library provides in-memory compression and
@@ -62,6 +66,10 @@ Group:		Development/C
 Requires:	%{lib_name} = %{version}-%{release}
 Obsoletes:	libz1-devel libz-devel zlib-devel
 Provides:	libz-devel = %{version}-%{release} libz1-devel = %{version}-%{release} %{name}-devel = %{version}-%{release}
+%if %{with uclibc}
+Provides:	uClibc-zlib-devel = %{version}-%{release} uClibc-zlib1-devel = %{version}-%{release}
+Obsoletes:	uClibc-zlib-devel <= %{version}-%{release} uClibc-zlib1-devel <= %{version}-%{release}
+%endif 
 
 %description -n	%{lib_name}-devel
 The zlib-devel package contains the header files and libraries needed
@@ -122,8 +130,8 @@ popd
 mkdir objsuclibc
 pushd objsuclibc
   CFLAGS="%{uclibc_cflags}" CC="%{uclibc_cc}" \
-  ../configure --prefix=%{_prefix}
-  %make libz.a
+  ../configure --shared --prefix=%{_prefix}
+  %make
 popd
 
 %if %{build_biarch}
@@ -168,9 +176,10 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 %endif
 
 %if %{with uclibc}
-install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
+#install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
+make install-libs -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
 %if %{build_biarch}
-install -m644 objsuclibc32/libz.a -D %{buildroot}%{uclibc_root}%{_prefix}/lib/libz.a
+make install-libs -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_prefix}/lib
 %endif
 %endif
 
@@ -190,9 +199,15 @@ rm -fr %{buildroot}
 %doc README
 /%{_lib}/libz.so.*
 %{_libdir}/libz.so.*
+%if %{with uclibc}
+%{uclibc_root}%{_libdir}/libz.so.*
+%endif
 %if %{build_biarch}
 /lib/libz.so.*
 %{_prefix}/lib/libz.so.*
+%if %{with uclibc}
+%{uclibc_root}%{_prefix}/lib/libz.so.*
+%endif
 %endif
 
 %files -n %{lib_name}-devel
@@ -201,9 +216,15 @@ rm -fr %{buildroot}
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
 %{_libdir}/*.so
+%if %{with uclibc}
+%{uclibc_root}%{_libdir}/libz.so
+%endif
 %if %{build_biarch}
 %{_prefix}/lib/*.a
 %{_prefix}/lib/*.so
+%if %{with uclibc}
+%{uclibc_root}%{_prefix}/lib/libz.so
+%endif
 %endif
 %{_includedir}/*
 %if %{with dietlibc}
