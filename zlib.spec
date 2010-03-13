@@ -16,7 +16,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.3
-Release:	%mkrel 15
+Release:	%mkrel 16
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -133,21 +133,6 @@ pushd objsuclibc
   ../configure --shared --prefix=%{_prefix}
   %make
 popd
-
-%if %{build_biarch}
-%ifarch %{sunsparc}
-RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
-%else
-RPM_OPT_FLAGS_32=`linux32 rpm --eval %%uclibc_cflags`
-%endif
-mkdir objsuclibc32
-pushd objsuclibc32
-  CFLAGS="$RPM_OPT_FLAGS_32" CC="%{uclibc_cc} -m32" \
-  ../configure --prefix=%{_prefix}
-  %make libz.a
-popd
-%endif
-
 %endif
 
 %install
@@ -178,9 +163,6 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 %if %{with uclibc}
 #install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
 make install-libs -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
-%if %{build_biarch}
-make install-libs -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_prefix}/lib
-%endif
 %endif
 
 %if %mdkversion < 200900
@@ -205,9 +187,6 @@ rm -fr %{buildroot}
 %if %{build_biarch}
 /lib/libz.so.*
 %{_prefix}/lib/libz.so.*
-%if %{with uclibc}
-%{uclibc_root}%{_prefix}/lib/libz.so.*
-%endif
 %endif
 
 %files -n %{lib_name}-devel
@@ -222,9 +201,6 @@ rm -fr %{buildroot}
 %if %{build_biarch}
 %{_prefix}/lib/*.a
 %{_prefix}/lib/*.so
-%if %{with uclibc}
-%{uclibc_root}%{_prefix}/lib/libz.so
-%endif
 %endif
 %{_includedir}/*
 %if %{with dietlibc}
@@ -232,7 +208,4 @@ rm -fr %{buildroot}
 %endif
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.a
-%if %{build_biarch}
-%{uclibc_root}%{_prefix}/lib/libz.a
-%endif
 %endif
