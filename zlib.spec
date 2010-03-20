@@ -1,5 +1,6 @@
 %define	lib_major 1
-%define	lib_name %{name}%{lib_major}
+%define	lib_name %mklibname %{name}%{lib_major}
+%define	devel_name %mklibname %{name} -d
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -60,18 +61,18 @@ data.  This version of the library supports only one compression method
 the same stream interface.  The zlib library is used by many different
 system programs.
 
-%package -n	%{lib_name}-devel
+%package -n	%{devel_name}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{lib_name} = %{version}-%{release}
-Obsoletes:	libz1-devel libz-devel zlib-devel
-Provides:	libz-devel = %{version}-%{release} libz1-devel = %{version}-%{release} %{name}-devel = %{version}-%{release}
+Obsoletes:	libz1-devel libz-devel zlib-devel zlib1-devel
+Provides:	libz-devel = %{version}-%{release} lib%{name}-devel = %{version}-%{release} %{name}-devel = %{version}-%{release}
 %if %{with uclibc}
 Provides:	uClibc-zlib-devel = %{version}-%{release} uClibc-zlib1-devel = %{version}-%{release}
 Obsoletes:	uClibc-zlib-devel <= %{version}-%{release} uClibc-zlib1-devel <= %{version}-%{release}
 %endif 
 
-%description -n	%{lib_name}-devel
+%description -n	%{devel_name}
 The zlib-devel package contains the header files and libraries needed
 to develop programs that use the zlib compression and decompression
 library.
@@ -179,17 +180,17 @@ rm -fr %{buildroot}
 %files -n %{lib_name}
 %defattr(-, root, root)
 %doc README
-/%{_lib}/libz.so.*
-%{_libdir}/libz.so.*
+/%{_lib}/libz.so.%{lib_major}*
+%{_libdir}/libz.so.%{lib_major}*
 %if %{with uclibc}
-%{uclibc_root}%{_libdir}/libz.so.*
+%{uclibc_root}%{_libdir}/libz.so.%{lib_major}*
 %endif
 %if %{build_biarch}
 /lib/libz.so.*
-%{_prefix}/lib/libz.so.*
+%{_prefix}/lib/libz.so.%{lib_major}*
 %endif
 
-%files -n %{lib_name}-devel
+%files -n %{devel_name}
 %defattr(-, root, root)
 %doc README ChangeLog algorithm.txt
 %{_mandir}/man3/zlib.3*
