@@ -190,12 +190,14 @@ rm -fr %{buildroot}
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
 %{_libdir}/*.so
+%{_libdir}/pkgconfig/zlib.pc
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.so
 %endif
 %if %{build_biarch}
 %{_prefix}/lib/*.a
 %{_prefix}/lib/*.so
+%{_prefix}/lib/pkgconfig/zlib.pc
 %endif
 %{_includedir}/*
 %if %{with dietlibc}
