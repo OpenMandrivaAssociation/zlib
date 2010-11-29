@@ -16,16 +16,13 @@
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
-Version:	1.2.3
-Release:	%mkrel 16
+Version:	1.2.5
+Release:	%mkrel 1
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
-Source0:	http://prdownloads.sourceforge.net/libpng/%{name}-%{version}.tar.bz2
-Patch0:		zlib-1.2.1-glibc.patch
-Patch1:		zlib-1.2.1-multibuild.patch
-Patch2:		zlib-1.2.2.2-build-fPIC.patch
-Patch4:		zlib-1.2.1.1-deb-alt-inflate.patch
+Source0:	http://prdownloads.sourceforge.net/libpng/%{name}-%{version}.tar.gz
+Patch1:		zlib-1.2.5-multibuild.patch
 BuildRequires:	setarch
 %if %{with uclibc}
 BuildRequires:	uClibc-devel
@@ -82,10 +79,7 @@ will use the zlib library.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1 -b .multibuild
-%patch2 -p1 -b .build-fPIC
-%patch4 -p1 -b .deb-alt-inflate
+%patch1 -p1 -b .multibuild~
 
 %build
 #(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
