@@ -83,7 +83,7 @@ will use the zlib library.
 
 %build
 #(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
-RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS| sed -e 's/-m.. //g'`"
+RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS| sed -e 's/-m.. //g'` -O3"
 mkdir objs
 pushd objs
   CFLAGS="$RPM_OPT_FLAGS" \
