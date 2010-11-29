@@ -186,7 +186,7 @@ rm -fr %{buildroot}
 
 %files -n %{devel_name}
 %defattr(-, root, root)
-%doc README ChangeLog algorithm.txt
+%doc README ChangeLog doc/algorithm.txt
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
 %{_libdir}/*.so
