@@ -25,7 +25,7 @@ Source0:	http://prdownloads.sourceforge.net/libpng/%{name}-%{version}.tar.gz
 Patch1:		zlib-1.2.5-multibuild.patch
 BuildRequires:	setarch
 %if %{with uclibc}
-BuildRequires:	uClibc-devel
+BuildRequires:	uClibc-devel >= uClibc-0.9.30.3-2
 %endif
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
