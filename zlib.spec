@@ -88,7 +88,7 @@ will use the zlib library.
 RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS| sed -e 's/-m.. //g'` -O3"
 mkdir objs
 pushd objs
-  CFLAGS="$RPM_OPT_FLAGS" \
+  CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
 %if %{build_biarch}
   CC="%{__cc} -m64" \
 %endif
@@ -106,7 +106,7 @@ RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags`
 %endif
 mkdir objs32
 pushd objs32
-  CFLAGS="$RPM_OPT_FLAGS_32" CC="%{__cc} -m32" \
+  CFLAGS="$RPM_OPT_FLAGS_32" LDFLAGS="%{?ldflags}" CC="%{__cc} -m32" \
   ../configure --shared --prefix=%{_prefix}
   %make
   make test
@@ -126,7 +126,7 @@ popd
 %if %{with uclibc}
 mkdir objsuclibc
 pushd objsuclibc
-  CFLAGS="%{uclibc_cflags}" CC="%{uclibc_cc}" \
+  CFLAGS="%{uclibc_cflags}" LDFLAGS="%{?ldflags}" CC="%{uclibc_cc}" \
   ../configure --shared --prefix=%{_prefix}
   %make
 popd
