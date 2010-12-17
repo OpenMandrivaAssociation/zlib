@@ -17,12 +17,13 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.5
-Release:	%mkrel 2
+Release:	%mkrel 3
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
 Source0:	http://prdownloads.sourceforge.net/libpng/%{name}-%{version}.tar.gz
 Patch1:		zlib-1.2.5-multibuild.patch
+Patch2:		zlib-1.2.5-lfs-decls.patch
 BuildRequires:	setarch
 %if %{with uclibc}
 BuildRequires:	uClibc-devel >= 0.9.30.3-2
@@ -82,6 +83,7 @@ will use the zlib library.
 %prep
 %setup -q
 %patch1 -p1 -b .multibuild~
+%patch2 -p1 -b .lfs
 
 %build
 #(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
@@ -160,8 +162,6 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 %if %{with uclibc}
 #install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
 make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
-%endif
-
 %endif
 
 %clean
