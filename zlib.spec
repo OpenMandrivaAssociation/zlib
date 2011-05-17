@@ -16,7 +16,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.5
-Release:	5
+Release:	6
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -30,7 +30,6 @@ BuildRequires:	uClibc-devel >= 0.9.30.3-2
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
 %endif
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 The zlib compression library provides in-memory compression and
@@ -138,8 +137,6 @@ popd
 %endif
 
 %install
-rm -rf %{buildroot}
-
 install -d %{buildroot}/%{_prefix}
 install -d %{buildroot}/%{_libdir}
 
@@ -167,11 +164,7 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
 %endif
 
-%clean
-rm -fr %{buildroot}
-
 %files -n %{lib_name}
-%defattr(-, root, root)
 %doc README
 /%{_lib}/libz.so.%{lib_major}*
 %{_libdir}/libz.so.%{lib_major}*
@@ -184,7 +177,6 @@ rm -fr %{buildroot}
 %endif
 
 %files -n %{lib_name}-devel
-%defattr(-, root, root)
 %doc README ChangeLog doc/algorithm.txt
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
