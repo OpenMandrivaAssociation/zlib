@@ -16,7 +16,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.5
-Release:	6
+Release:	7
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -25,7 +25,7 @@ Patch1:		zlib-1.2.5-multibuild.patch
 Patch2:		zlib-1.2.5-lfs-decls.patch
 BuildRequires:	setarch
 %if %{with uclibc}
-BuildRequires:	uClibc-devel >= 0.9.30.3-2
+BuildRequires:	uClibc-devel >= 0.9.32-2
 %endif
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
