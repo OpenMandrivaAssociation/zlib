@@ -16,7 +16,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.5
-Release:	7
+Release:	8
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -106,7 +106,7 @@ popd
 %ifarch %{sunsparc}
 RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
 %else
-RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags`
+RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags|sed -e 's#i586#pentium4#g'`
 %endif
 mkdir objs32
 pushd objs32
