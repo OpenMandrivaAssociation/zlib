@@ -1,8 +1,8 @@
 %define lib_major 1
 %define lib_name %{name}%{lib_major}
 #fix in future release
-#% define libname %mklibname %{name} %{api} %{major}
-#% define develname %mklibname %{name} -d
+#% define libname % mklibname % {name} % {api} % {major}
+#% define develname % mklibname % {name} -d
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
