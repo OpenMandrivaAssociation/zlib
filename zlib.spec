@@ -9,7 +9,7 @@ Name:		zlib
 Version:	1.2.5
 Release:	%mkrel 11
 Group:		System/Libraries
-Source:		http://www.zlib.net/zlib-%{version}.tar.bz2
+Source0:	http://www.zlib.net/zlib-%{version}.tar.bz2
 Patch3:		zlib-1.2.4-autotools.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=591317
 Patch4:		zlib-1.2.5-gentoo.patch
