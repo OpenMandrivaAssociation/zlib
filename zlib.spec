@@ -17,7 +17,7 @@ Patch5:		minizip-null.patch
 URL:		http://www.gzip.org/zlib/
 # /contrib/dotzlib/ have Boost license
 License:	BSD
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+#BuildRoot:	% {_tmppath}/% {name}-% {version}-% {release}-root-% (% {__id_u} -n)
 BuildRequires:	automake, autoconf, libtool
 
 %description
