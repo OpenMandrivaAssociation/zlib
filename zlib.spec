@@ -124,9 +124,9 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %clean
 rm -rf ${RPM_BUILD_ROOT}
 
-%post -p /sbin/ldconfig
+%post -n %{lib_name} -p /sbin/ldconfig
 
-%postun -p /sbin/ldconfig
+%postun -n %{lib_name} -p /sbin/ldconfig
 
 %post -n %{lib_name}-minizip -p /sbin/ldconfig
 
