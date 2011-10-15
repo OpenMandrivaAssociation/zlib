@@ -39,6 +39,7 @@ Summary:	Header files and libraries for Zlib development
 Group:		Development/C
 Obsoletes:	libz1-devel libz-devel zlib-devel
 Provides:	zlib-devel
+Provides:	libz-devel
 
 Requires:	%{lib_name} = %{version}-%{release}
 
