@@ -1,6 +1,14 @@
 %define		libz_major		1
-%define		libz			%mklibname z %{libz_major}
-%define		libz_devel		%mklibname -d z
+# Avoid need to fight who provides what until previous packages
+# are removed from repositories, and possible upgrade issues
+%define		only_split_multilib	1
+%if %{only_split_multilib}
+    %define	libz			%{name}%{libz_major}
+    %define	libz_devel		%{libz}-devel
+%else
+    %define	libz			%mklibname z %{libz_major}
+    %define	libz_devel		%mklibname -d z
+%endif
 %define		multilibz		libz%{libz_major}
 
 %define		build_multiarch		0
@@ -46,7 +54,15 @@ Provides:	libz = %{version}-%{release}
 Provides:	%{name} = %{version}-%{release}
 Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{release}
 Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
-%rename		zlib1
+%define		libold	%mklibname %{name}%{libz_major}
+%rename		libold
+%if %{only_split_multilib}
+    %if !%{build_multiarch}
+Provides:       libz1 = %{version}-%{release}
+    %endif
+%else
+%rename zlib1
+%endif
 
 %description	-n %{libz}
 The zlib compression library provides in-memory compression and
