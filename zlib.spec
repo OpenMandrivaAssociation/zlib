@@ -142,7 +142,12 @@ popd
 %if %{with dietlibc}
 mkdir objsdietlibc
 pushd objsdietlibc
-  CFLAGS="-Os" CC="diet gcc" \
+%ifarch x86_64
+  CFLAGS="-Os -fPIC" \
+%else
+  CFLAGS="-Os" \
+%endif
+CC="diet gcc" \
   ../configure --prefix=%{_prefix}
   %make libz.a
 popd
