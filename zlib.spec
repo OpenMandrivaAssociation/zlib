@@ -55,7 +55,7 @@ Provides:	%{name} = %{version}-%{release}
 Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{release}
 Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
 %define		libold	%mklibname %{name}%{libz_major}
-%rename		libold
+%rename		%{libold}
 %if %{only_split_multilib}
     %if !%{build_multiarch}
 Provides:       libz1 = %{version}-%{release}
