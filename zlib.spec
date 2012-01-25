@@ -99,8 +99,7 @@ Provides:	libz-devel = %{version}-%{release}
 %endif
 Obsoletes:	libz1-devel
 %if %{with uclibc}
-Provides:	uClibc-zlib-devel = %{version}-%{release} uClibc-zlib1-devel = %{version}-%{release}
-Obsoletes:	uClibc-zlib-devel <= %{version}-%{release} uClibc-zlib1-devel <= %{version}-%{release}
+%rename		uClibc-zlib1-devel
 %endif 
 %rename		zlib-devel
 %rename		zlib1-devel
