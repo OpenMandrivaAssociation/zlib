@@ -1,13 +1,9 @@
 %define	lib_major 1
 %define	lib_name %{name}%{lib_major}
 
-%define build_biarch 0
-# Enable bi-arch build on ppc64, sparc64 and x86-64
-%ifarch sparcv9 sparc64 x86_64 ppc64
-%define build_biarch 1
-%endif
-%ifarch sparcv9
-%define	_lib	lib64
+%define		build_multiarch		0
+%ifarch x86_64
+    %define	build_multiarch		1
 %endif
 
 %bcond_without uclibc
@@ -93,7 +89,7 @@ RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS| sed -e 's/-m.. //g'` -O3"
 mkdir objs
 pushd objs
   CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
-%if %{build_biarch}
+%if %{build_multiarch}
   CC="%{__cc} -m64" \
 %endif
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
@@ -102,12 +98,8 @@ pushd objs
   ln -s ../zlib.3 .
 popd
 
-%if %{build_biarch}
-%ifarch %{sunsparc}
-RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
-%else
+%if %{build_multiarch}
 RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags|sed -e 's#i586#pentium4#g'`
-%endif
 mkdir objs32
 pushd objs32
   CFLAGS="$RPM_OPT_FLAGS_32" LDFLAGS="%{?ldflags}" CC="%{__cc} -m32" \
@@ -141,7 +133,7 @@ install -d %{buildroot}/%{_prefix}
 install -d %{buildroot}/%{_libdir}
 
 make install -C objs prefix=%{buildroot}%{_prefix} libdir=%{buildroot}%{_libdir}
-%if %{build_biarch}
+%if %{build_multiarch}
 make install-libs -C objs32 prefix=%{buildroot}%{_prefix}
 %endif
 
@@ -149,7 +141,7 @@ install -d %{buildroot}/%{_lib}
 mv %{buildroot}%{_libdir}/*.so.* %{buildroot}/%{_lib}/
 ln -s ../../%{_lib}/libz.so.%{version} %{buildroot}%{_libdir}/
 
-%if %{build_biarch}
+%if %{build_multiarch}
 install -d %{buildroot}/lib
 mv %{buildroot}%{_prefix}/lib/*.so.* %{buildroot}/lib/
 ln -s ../../lib/libz.so.%{version} %{buildroot}%{_prefix}/lib/
@@ -171,7 +163,7 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.so.%{lib_major}*
 %endif
-%if %{build_biarch}
+%if %{build_multiarch}
 /lib/libz.so.*
 %{_prefix}/lib/libz.so.%{lib_major}*
 %endif
@@ -185,7 +177,7 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.so
 %endif
-%if %{build_biarch}
+%if %{build_multiarch}
 %{_prefix}/lib/*.a
 %{_prefix}/lib/*.so
 %{_prefix}/lib/pkgconfig/zlib.pc
