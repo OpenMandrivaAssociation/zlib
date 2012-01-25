@@ -1,6 +1,6 @@
 %define		libz_major		1
-%define		libz			%{name}%{libz_major}
-%define		libz_devel		%{libz}-devel
+%define		libz			%mklibname z %{libz_major}
+%define		libz_devel		%mklibname -d z
 %define		multilibz		libz%{libz_major}
 
 %define		build_multiarch		0
@@ -15,7 +15,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.5
-Release:	10
+Release:	10.1
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -42,16 +42,11 @@ system programs.
 %package	-n %{libz}
 Summary:	The zlib compression and decompression library
 Group:		System/Libraries
-Obsoletes:	libz, libz1, %{name}
-#(proyvind):	library policy applied by error here previously, this is a biarch
-#	     	package that ships *both* lib & lib64
-%define	liberr	%{mklibname %{name}%{libz_major}}
-%rename	%{liberr}
-Provides:	libz = %{version}-%{release} libz1 = %{version}-%{release} %{name} = %{version}-%{release}
-%if %{with uclibc}
+Provides:	libz = %{version}-%{release}
+Provides:	%{name} = %{version}-%{release}
 Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{release}
 Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
-%endif 
+%rename		zlib1
 
 %description	-n %{libz}
 The zlib compression library provides in-memory compression and
@@ -68,24 +63,45 @@ system programs.
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.so.%{libz_major}*
 %endif
+
+########################################################################
 %if %{build_multiarch}
+#-----------------------------------------------------------------------
+%package	-n %{multilibz}
+Summary:	The zlib compression and decompression library
+Group:		System/Libraries
+
+%description	-n %{multilibz}
+The zlib compression library provides in-memory compression and
+decompression functions, including integrity checks of the uncompressed
+data.  This version of the library supports only one compression method
+(deflation), but other algorithms may be added later, which will have
+the same stream interface.  The zlib library is used by many different
+system programs.
+
+%files		-n %{multilibz}
 /lib/libz.so.*
 %{_prefix}/lib/libz.so.%{libz_major}*
-%endif
+#-----------------------------------------------------------------------
+# build_multiarch
+%endif 
 
 #-----------------------------------------------------------------------
 %package	-n %{libz_devel}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{libz} = %{version}-%{release}
-Obsoletes:	libz1-devel libz-devel zlib-devel
-%define	deverr	%{mklibname -d %{name}}
-%rename	%{deverr}
-Provides:	libz-devel = %{version}-%{release} libz1-devel = %{version}-%{release} %{name}-devel = %{version}-%{release}
+%if %{build_multiarch}
+Requires:	%{multilibz} = %{version}-%{release}
+Provides:	libz-devel = %{version}-%{release}
+%endif
+Obsoletes:	libz1-devel
 %if %{with uclibc}
 Provides:	uClibc-zlib-devel = %{version}-%{release} uClibc-zlib1-devel = %{version}-%{release}
 Obsoletes:	uClibc-zlib-devel <= %{version}-%{release} uClibc-zlib1-devel <= %{version}-%{release}
 %endif 
+%rename		zlib-devel
+%rename		zlib1-devel
 
 %description	-n %{libz_devel}
 The zlib-devel package contains the header files and libraries needed
