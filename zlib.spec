@@ -52,17 +52,12 @@ system programs.
 %package -n	%{libz}
 Summary:	The zlib compression and decompression library
 Group:		System/Libraries
-Provides:	libz = %{version}-%{release}
-Provides:	%{name} = %{version}-%{release}
 %if %{with uclibc}
 %rename		uClibc-zlib1
 %endif
 %define		libold	%mklibname %{name}%{libz_major}
 %rename		%{libold}
 %if %{only_split_multilib}
-    %if !%{build_biarch}
-Provides:       libz1 = %{version}-%{release}
-    %endif
 %else
 %rename zlib1
 %endif
@@ -97,7 +92,6 @@ Requires:	%{libz} = %{version}-%{release}
 Requires:	%{multilibz} = %{version}-%{release}
 Provides:	libz-devel = %{version}-%{release}
 %endif
-Obsoletes:	libz1-devel
 %if %{with uclibc}
 %rename		uClibc-zlib1-devel
 %endif 
