@@ -130,6 +130,7 @@ popd
 RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
 %else
 RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags|sed -e 's#i586#pentium4#g'`
+%endif
 mkdir objs32
 pushd objs32
   CFLAGS="$RPM_OPT_FLAGS_32" LDFLAGS="%{?ldflags}" CC="%{__cc} -m32" \
