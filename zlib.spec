@@ -54,8 +54,9 @@ Summary:	The zlib compression and decompression library
 Group:		System/Libraries
 Provides:	libz = %{version}-%{release}
 Provides:	%{name} = %{version}-%{release}
-Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{release}
-Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
+%if %{with uclibc}
+%rename		uClibc-zlib1
+%endif
 %define		libold	%mklibname %{name}%{libz_major}
 %rename		%{libold}
 %if %{only_split_multilib}
