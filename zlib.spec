@@ -1,5 +1,7 @@
-%define	lib_major 1
-%define	lib_name %{name}%{lib_major}
+%define		libz_major		1
+%define		libz			%{name}%{libz_major}
+%define		libz_devel		%{libz}-devel
+%define		multilibz		libz%{libz_major}
 
 %define		build_multiarch		0
 %ifarch x86_64
@@ -35,13 +37,13 @@ data.  This version of the library supports only one compression method
 the same stream interface.  The zlib library is used by many different
 system programs.
 
-%package -n	%{lib_name}
+%package -n	%{libz}
 Summary:	The zlib compression and decompression library
 Group:		System/Libraries
 Obsoletes:	libz, libz1, %{name}
 #(proyvind):	library policy applied by error here previously, this is a biarch
 #	     	package that ships *both* lib & lib64
-%define	liberr	%{mklibname %{name}%{lib_major}}
+%define	liberr	%{mklibname %{name}%{libz_major}}
 %rename	%{liberr}
 Provides:	libz = %{version}-%{release} libz1 = %{version}-%{release} %{name} = %{version}-%{release}
 %if %{with uclibc}
@@ -49,7 +51,7 @@ Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{releas
 Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
 %endif 
 
-%description -n	%{lib_name}
+%description -n	%{libz}
 The zlib compression library provides in-memory compression and
 decompression functions, including integrity checks of the uncompressed
 data.  This version of the library supports only one compression method
@@ -57,10 +59,10 @@ data.  This version of the library supports only one compression method
 the same stream interface.  The zlib library is used by many different
 system programs.
 
-%package -n	%{lib_name}-devel
+%package -n	%{libz_devel}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
-Requires:	%{lib_name} = %{version}-%{release}
+Requires:	%{libz} = %{version}-%{release}
 Obsoletes:	libz1-devel libz-devel zlib-devel
 %define	deverr	%{mklibname -d %{name}}
 %rename	%{deverr}
@@ -70,7 +72,7 @@ Provides:	uClibc-zlib-devel = %{version}-%{release} uClibc-zlib1-devel = %{versi
 Obsoletes:	uClibc-zlib-devel <= %{version}-%{release} uClibc-zlib1-devel <= %{version}-%{release}
 %endif 
 
-%description -n	%{lib_name}-devel
+%description -n	%{libz_devel}
 The zlib-devel package contains the header files and libraries needed
 to develop programs that use the zlib compression and decompression
 library.
@@ -94,7 +96,6 @@ pushd objs
 %endif
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
   %make
-  make test
   ln -s ../zlib.3 .
 popd
 
@@ -105,7 +106,6 @@ pushd objs32
   CFLAGS="$RPM_OPT_FLAGS_32" LDFLAGS="%{?ldflags}" CC="%{__cc} -m32" \
   ../configure --shared --prefix=%{_prefix}
   %make
-  make test
   ln -s ../zlib.3 .
 popd
 %endif
@@ -125,6 +125,16 @@ pushd objsuclibc
   CFLAGS="%{uclibc_cflags}" LDFLAGS="%{?ldflags}" CC="%{uclibc_cc}" \
   ../configure --shared --prefix=%{_prefix}
   %make
+popd
+%endif
+
+%check
+pushd objs
+     make test
+popd
+%if %{build_multiarch}
+pushd objs32
+    make test
 popd
 %endif
 
@@ -156,19 +166,19 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
 %endif
 
-%files -n %{lib_name}
+%files -n %{libz}
 %doc README
-/%{_lib}/libz.so.%{lib_major}*
-%{_libdir}/libz.so.%{lib_major}*
+/%{_lib}/libz.so.%{libz_major}*
+%{_libdir}/libz.so.%{libz_major}*
 %if %{with uclibc}
-%{uclibc_root}%{_libdir}/libz.so.%{lib_major}*
+%{uclibc_root}%{_libdir}/libz.so.%{libz_major}*
 %endif
 %if %{build_multiarch}
 /lib/libz.so.*
-%{_prefix}/lib/libz.so.%{lib_major}*
+%{_prefix}/lib/libz.so.%{libz_major}*
 %endif
 
-%files -n %{lib_name}-devel
+%files -n %{libz_devel}
 %doc README ChangeLog doc/algorithm.txt
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
