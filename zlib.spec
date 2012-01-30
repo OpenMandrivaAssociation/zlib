@@ -1,15 +1,5 @@
-%define		libz_major		1
-# Avoid need to fight who provides what until previous packages
-# are removed from repositories, and possible upgrade issues
-%define		only_split_multilib	1
-%if %{only_split_multilib}
-    %define	libz			%{name}%{libz_major}
-    %define	libz_devel		%{libz}-devel
-%else
-    %define	libz			%mklibname z %{libz_major}
-    %define	libz_devel		%mklibname -d z
-%endif
-%define		multilibz		libz%{libz_major}
+%define	lib_major 1
+%define	lib_name %{name}%{lib_major}
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -26,7 +16,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.6
-Release:	1
+Release:	2
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -48,56 +38,42 @@ data.  This version of the library supports only one compression method
 the same stream interface.  The zlib library is used by many different
 system programs.
 
-%package -n	%{libz}
+%package -n	%{lib_name}
 Summary:	The zlib compression and decompression library
 Group:		System/Libraries
+Obsoletes:	libz, libz1, %{name}
+#(proyvind):	library policy applied by error here previously, this is a biarch
+#	     	package that ships *both* lib & lib64
+%define	liberr	%{mklibname %{name}%{lib_major}}
+%rename	%{liberr}
+Provides:	libz = %{version}-%{release} libz1 = %{version}-%{release} %{name} = %{version}-%{release}
 %if %{with uclibc}
-%rename		uClibc-zlib1
-%endif
-%define		libold	%mklibname %{name}%{libz_major}
-%rename		%{libold}
-%if %{only_split_multilib}
-%else
-%rename zlib1
-%endif
-
-%description -n	%{libz}
-The zlib compression library provides in-memory compression and
-decompression functions, including integrity checks of the uncompressed
-data.  This version of the library supports only one compression method
-(deflation), but other algorithms may be added later, which will have
-the same stream interface.  The zlib library is used by many different
-system programs.
-
-%if %{build_biarch}
-%package -n	%{multilibz}
-Summary:	The zlib compression and decompression library
-Group:		System/Libraries
-
-%description -n	%{multilibz}
-The zlib compression library provides in-memory compression and
-decompression functions, including integrity checks of the uncompressed
-data.  This version of the library supports only one compression method
-(deflation), but other algorithms may be added later, which will have
-the same stream interface.  The zlib library is used by many different
-system programs.
+Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{release}
+Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
 %endif 
 
-%package -n	%{libz_devel}
+%description -n	%{lib_name}
+The zlib compression library provides in-memory compression and
+decompression functions, including integrity checks of the uncompressed
+data.  This version of the library supports only one compression method
+(deflation), but other algorithms may be added later, which will have
+the same stream interface.  The zlib library is used by many different
+system programs.
+
+%package -n	%{lib_name}-devel
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
-Requires:	%{libz} = %{version}-%{release}
-%if %{build_biarch}
-Requires:	%{multilibz} = %{version}-%{release}
-Provides:	libz-devel = %{version}-%{release}
-%endif
+Requires:	%{lib_name} = %{version}-%{release}
+Obsoletes:	libz1-devel libz-devel zlib-devel
+%define	deverr	%{mklibname -d %{name}}
+%rename	%{deverr}
+Provides:	libz-devel = %{version}-%{release} libz1-devel = %{version}-%{release} %{name}-devel = %{version}-%{release}
 %if %{with uclibc}
-%rename		uClibc-zlib1-devel
+Provides:	uClibc-zlib-devel = %{version}-%{release} uClibc-zlib1-devel = %{version}-%{release}
+Obsoletes:	uClibc-zlib-devel <= %{version}-%{release} uClibc-zlib1-devel <= %{version}-%{release}
 %endif 
-%rename		zlib-devel
-%rename		zlib1-devel
 
-%description -n	%{libz_devel}
+%description -n	%{lib_name}-devel
 The zlib-devel package contains the header files and libraries needed
 to develop programs that use the zlib compression and decompression
 library.
@@ -120,11 +96,12 @@ pushd objs
 %endif
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
   %make
+  make test
   ln -s ../zlib.3 .
 popd
 
 %if %{build_biarch}
-%ifarch %{sparcx}
+%ifarch %{sunsparc}
 RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
 %else
 RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags|sed -e 's#i586#pentium4#g'`
@@ -134,6 +111,7 @@ pushd objs32
   CFLAGS="$RPM_OPT_FLAGS_32" LDFLAGS="%{?ldflags}" CC="%{__cc} -m32" \
   ../configure --shared --prefix=%{_prefix}
   %make
+  make test
   ln -s ../zlib.3 .
 popd
 %endif
@@ -141,12 +119,7 @@ popd
 %if %{with dietlibc}
 mkdir objsdietlibc
 pushd objsdietlibc
-%ifarch x86_64
-  CFLAGS="-Os -fPIC" \
-%else
-  CFLAGS="-Os" \
-%endif
-CC="diet gcc" \
+  CFLAGS="-Os" CC="diet gcc" \
   ../configure --prefix=%{_prefix}
   %make libz.a
 popd
@@ -158,16 +131,6 @@ pushd objsuclibc
   CFLAGS="%{uclibc_cflags}" LDFLAGS="%{?ldflags}" CC="%{uclibc_cc}" \
   ../configure --shared --prefix=%{_prefix}
   %make
-popd
-%endif
-
-%check
-pushd objs
-     make test
-popd
-%if %{build_biarch}
-pushd objs32
-    make test
 popd
 %endif
 
@@ -199,21 +162,19 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
 %endif
 
-%files -n %{libz}
+%files -n %{lib_name}
 %doc README
-/%{_lib}/libz.so.%{libz_major}*
-%{_libdir}/libz.so.%{libz_major}*
+/%{_lib}/libz.so.%{lib_major}*
+%{_libdir}/libz.so.%{lib_major}*
 %if %{with uclibc}
-%{uclibc_root}%{_libdir}/libz.so.%{libz_major}*
+%{uclibc_root}%{_libdir}/libz.so.%{lib_major}*
 %endif
-
 %if %{build_biarch}
-%files -n %{multilibz}
 /lib/libz.so.*
-%{_prefix}/lib/libz.so.%{libz_major}*
+%{_prefix}/lib/libz.so.%{lib_major}*
 %endif
 
-%files -n %{libz_devel}
+%files -n %{lib_name}-devel
 %doc README ChangeLog doc/algorithm.txt
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
