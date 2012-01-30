@@ -25,14 +25,13 @@
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
-Version:	1.2.5
-Release:	10.1
+Version:	1.2.6
+Release:	1
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
-Source0:	http://prdownloads.sourceforge.net/libpng/%{name}-%{version}.tar.gz
-Patch1:		zlib-1.2.5-multibuild.patch
-Patch2:		zlib-1.2.5-lfs-decls.patch
+Source0:	http://www.zlib.net/%{name}-%{version}.tar.gz
+Patch1:		zlib-1.2.6-multibuild.patch
 BuildRequires:	setarch
 %if %{with uclibc}
 BuildRequires:	uClibc-devel >= 0.9.32-2
@@ -109,7 +108,6 @@ will use the zlib library.
 %prep
 %setup -q
 %patch1 -p1 -b .multibuild~
-%patch2 -p1 -b .lfs
 
 %build
 #(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
