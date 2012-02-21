@@ -41,15 +41,16 @@ system programs.
 %package -n	%{libname}
 Summary:	The zlib compression and decompression library
 Group:		System/Libraries
-Obsoletes:	libz, libz1, %{name}
 #(proyvind):	library policy applied by error here previously, this is a biarch
 #	     	package that ships *both* lib & lib64
 %define	liberr	%{mklibname %{name}%{major}}
-%rename	%{liberr}
-Provides:	libz = %{version}-%{release} libz1 = %{version}-%{release} %{name} = %{version}-%{release}
+%rename		%{liberr}
+%rename		libz
+%rename		libz1
+%rename		%{name}
 %if %{with uclibc}
-Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{release}
-Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
+%rename		uClibc-zlib
+%rename		uClibc-zlib1
 %endif 
 
 %description -n	%{libname}
@@ -64,13 +65,14 @@ system programs.
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{libname} = %{version}-%{release}
-Obsoletes:	libz1-devel libz-devel zlib-devel
 %define	deverr	%{mklibname -d %{name}}
-%rename	%{deverr}
-Provides:	libz-devel = %{version}-%{release} libz1-devel = %{version}-%{release} %{name}-devel = %{version}-%{release}
+%rename		%{deverr}
+%rename		libz1-devel
+%rename		libz-devel
+%rename		%{name}-devel
 %if %{with uclibc}
-Provides:	uClibc-zlib-devel = %{version}-%{release} uClibc-zlib1-devel = %{version}-%{release}
-Obsoletes:	uClibc-zlib-devel <= %{version}-%{release} uClibc-zlib1-devel <= %{version}-%{release}
+%rename		uClibc-zlib-devel
+%rename		uClibc-zlib1-devel
 %endif 
 
 %description -n	%{libname}-devel
