@@ -1,5 +1,5 @@
-%define	lib_major 1
-%define	lib_name %{name}%{lib_major}
+%define	major 1
+%define	lib_name %{name}%{major}
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -44,7 +44,7 @@ Group:		System/Libraries
 Obsoletes:	libz, libz1, %{name}
 #(proyvind):	library policy applied by error here previously, this is a biarch
 #	     	package that ships *both* lib & lib64
-%define	liberr	%{mklibname %{name}%{lib_major}}
+%define	liberr	%{mklibname %{name}%{major}}
 %rename	%{liberr}
 Provides:	libz = %{version}-%{release} libz1 = %{version}-%{release} %{name} = %{version}-%{release}
 %if %{with uclibc}
@@ -164,14 +164,14 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 
 %files -n %{lib_name}
 %doc README
-/%{_lib}/libz.so.%{lib_major}*
-%{_libdir}/libz.so.%{lib_major}*
+/%{_lib}/libz.so.%{major}*
+%{_libdir}/libz.so.%{major}*
 %if %{with uclibc}
-%{uclibc_root}%{_libdir}/libz.so.%{lib_major}*
+%{uclibc_root}%{_libdir}/libz.so.%{major}*
 %endif
 %if %{build_biarch}
 /lib/libz.so.*
-%{_prefix}/lib/libz.so.%{lib_major}*
+%{_prefix}/lib/libz.so.%{major}*
 %endif
 
 %files -n %{lib_name}-devel
