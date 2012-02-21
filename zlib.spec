@@ -1,5 +1,8 @@
-%define	major 1
-%define	libname %{name}%{major}
+%define shortname	z
+%define major 1
+%define libname		%mklibname %{shortname}%{major}
+%define biarchname	lib%{shortname}%{major}
+%define develname	%mklibname %{shortname} -d
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -41,10 +44,9 @@ system programs.
 %package -n	%{libname}
 Summary:	The zlib compression and decompression library
 Group:		System/Libraries
-#(proyvind):	library policy applied by error here previously, this is a biarch
-#	     	package that ships *both* lib & lib64
 %rename		%{_lib}zlib1
 %rename		%{name}
+%rename		%{name}1
 
 %description -n	%{libname}
 The zlib compression library provides in-memory compression and
@@ -54,14 +56,25 @@ data.  This version of the library supports only one compression method
 the same stream interface.  The zlib library is used by many different
 system programs.
 
-%package -n	%{libname}-devel
+%if %{build_biarch}
+%package -n	%{biarchname}
+Summary:	The zlib compression and decompression library - biarch
+Group:		System/Libraries
+Conflicts:	zlib1 < 1.2.6-3
+
+%description -n %{biarchname}
+This package contains the zlib biarch library.
+%endif
+
+%package -n	%{develname}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{libname} = %{version}-%{release}
 %rename		%{_lib}zlib-devel
 %rename		%{name}-devel
+%rename		%{name}1-devel
 
-%description -n	%{libname}-devel
+%description -n	%{develname}
 The zlib-devel package contains the header files and libraries needed
 to develop programs that use the zlib compression and decompression
 library.
@@ -166,7 +179,7 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %{_prefix}/lib/libz.so.%{major}*
 %endif
 
-%files -n %{libname}-devel
+%files -n %{develname}
 %doc README ChangeLog doc/algorithm.txt
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
