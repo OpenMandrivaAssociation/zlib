@@ -153,6 +153,10 @@ ln -s ../../%{_lib}/libz.so.%{version} %{buildroot}%{_libdir}/
 install -d %{buildroot}/lib
 mv %{buildroot}%{_prefix}/lib/*.so.* %{buildroot}/lib/
 ln -s ../../lib/libz.so.%{version} %{buildroot}%{_prefix}/lib/
+# MD there should be no reason the 32bit devel files should be pkgd
+rm -f %{buildroot}%{_prefix}/lib/*.a \
+	%{buildroot}%{_prefix}/lib/*.so \
+	%{buildroot}%{_prefix}/lib/pkgconfig/zlib.pc
 %endif
 
 %if %{with dietlibc}
@@ -184,11 +188,6 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %{_libdir}/pkgconfig/zlib.pc
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.so
-%endif
-%if %{build_biarch}
-%{_prefix}/lib/*.a
-%{_prefix}/lib/*.so
-%{_prefix}/lib/pkgconfig/zlib.pc
 %endif
 %{_includedir}/*
 %if %{with dietlibc}
