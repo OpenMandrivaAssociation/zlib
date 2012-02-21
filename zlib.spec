@@ -1,5 +1,5 @@
 %define	major 1
-%define	lib_name %{name}%{major}
+%define	libname %{name}%{major}
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -38,7 +38,7 @@ data.  This version of the library supports only one compression method
 the same stream interface.  The zlib library is used by many different
 system programs.
 
-%package -n	%{lib_name}
+%package -n	%{libname}
 Summary:	The zlib compression and decompression library
 Group:		System/Libraries
 Obsoletes:	libz, libz1, %{name}
@@ -52,7 +52,7 @@ Provides:	uClibc-zlib = %{version}-%{release} uClibc-zlib1 = %{version}-%{releas
 Obsoletes:	uClibc-zlib <= %{version}-%{release} uClibc-zlib1 <= %{version}-%{release}
 %endif 
 
-%description -n	%{lib_name}
+%description -n	%{libname}
 The zlib compression library provides in-memory compression and
 decompression functions, including integrity checks of the uncompressed
 data.  This version of the library supports only one compression method
@@ -60,10 +60,10 @@ data.  This version of the library supports only one compression method
 the same stream interface.  The zlib library is used by many different
 system programs.
 
-%package -n	%{lib_name}-devel
+%package -n	%{libname}-devel
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
-Requires:	%{lib_name} = %{version}-%{release}
+Requires:	%{libname} = %{version}-%{release}
 Obsoletes:	libz1-devel libz-devel zlib-devel
 %define	deverr	%{mklibname -d %{name}}
 %rename	%{deverr}
@@ -73,7 +73,7 @@ Provides:	uClibc-zlib-devel = %{version}-%{release} uClibc-zlib1-devel = %{versi
 Obsoletes:	uClibc-zlib-devel <= %{version}-%{release} uClibc-zlib1-devel <= %{version}-%{release}
 %endif 
 
-%description -n	%{lib_name}-devel
+%description -n	%{libname}-devel
 The zlib-devel package contains the header files and libraries needed
 to develop programs that use the zlib compression and decompression
 library.
@@ -162,7 +162,7 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
 %endif
 
-%files -n %{lib_name}
+%files -n %{libname}
 %doc README
 /%{_lib}/libz.so.%{major}*
 %{_libdir}/libz.so.%{major}*
@@ -174,7 +174,7 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %{_prefix}/lib/libz.so.%{major}*
 %endif
 
-%files -n %{lib_name}-devel
+%files -n %{libname}-devel
 %doc README ChangeLog doc/algorithm.txt
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
