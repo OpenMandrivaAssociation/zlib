@@ -174,7 +174,9 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.so.%{major}*
 %endif
+
 %if %{build_biarch}
+%files -n %{biarchname}
 /lib/libz.so.*
 %{_prefix}/lib/libz.so.%{major}*
 %endif
