@@ -89,7 +89,7 @@ pushd objs
 popd
 
 %if %{build_biarch}
-%ifarch %{sunsparc}
+%ifarch %{sparcx}
 RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
 %else
 RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags|sed -e 's#i586#pentium4#g'`
