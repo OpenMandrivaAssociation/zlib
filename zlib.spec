@@ -43,15 +43,8 @@ Summary:	The zlib compression and decompression library
 Group:		System/Libraries
 #(proyvind):	library policy applied by error here previously, this is a biarch
 #	     	package that ships *both* lib & lib64
-%define	liberr	%{mklibname %{name}%{major}}
-%rename		%{liberr}
-%rename		libz
-%rename		libz1
+%rename		%{_lib}zlib1
 %rename		%{name}
-%if %{with uclibc}
-%rename		uClibc-zlib
-%rename		uClibc-zlib1
-%endif 
 
 %description -n	%{libname}
 The zlib compression library provides in-memory compression and
@@ -65,15 +58,8 @@ system programs.
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{libname} = %{version}-%{release}
-%define	deverr	%{mklibname -d %{name}}
-%rename		%{deverr}
-%rename		libz1-devel
-%rename		libz-devel
+%rename		%{_lib}zlib-devel
 %rename		%{name}-devel
-%if %{with uclibc}
-%rename		uClibc-zlib-devel
-%rename		uClibc-zlib1-devel
-%endif 
 
 %description -n	%{libname}-devel
 The zlib-devel package contains the header files and libraries needed
