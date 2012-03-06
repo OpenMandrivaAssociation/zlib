@@ -14,7 +14,7 @@
 %endif
 
 %bcond_with	uclibc
-%bcond_without	dietlibc
+%bcond_with	dietlibc
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
