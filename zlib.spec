@@ -19,7 +19,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.6
-Release:	3
+Release:	4
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -64,6 +64,17 @@ Conflicts:	zlib1 < 1.2.6-3
 
 %description -n %{biarchname}
 This package contains the zlib biarch library.
+%endif
+
+%if %{with uclibc}
+%package -n	uclibc-%{libname}
+Summary:	The zlib compression and decompression library linked against uClibc
+Group:		System/Libraries
+Conflicts:	zlib1 < 1.2.6-4
+
+%description -n	uclibc-%{libname}
+This package contains a version of the zlib library that's built against the
+uClibc library.
 %endif
 
 %package -n	%{develname}
@@ -171,14 +182,16 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %doc README
 /%{_lib}/libz.so.%{major}*
 %{_libdir}/libz.so.%{major}*
-%if %{with uclibc}
-%{uclibc_root}%{_libdir}/libz.so.%{major}*
-%endif
 
 %if %{build_biarch}
 %files -n %{biarchname}
 /lib/libz.so.*
 %{_prefix}/lib/libz.so.%{major}*
+%endif
+
+%if %{with uclibc}
+%files -n uclibc-%{libname}
+%{uclibc_root}%{_libdir}/libz.so.%{major}*
 %endif
 
 %files -n %{develname}
