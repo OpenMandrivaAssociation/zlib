@@ -13,8 +13,8 @@
 %define	_lib	lib64
 %endif
 
-%bcond_without uclibc
-%bcond_without dietlibc
+%bcond_with	uclibc
+%bcond_without	dietlibc
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
