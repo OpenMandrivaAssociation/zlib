@@ -13,13 +13,13 @@
 %define	_lib	lib64
 %endif
 
-%bcond_with	uclibc
-%bcond_with	dietlibc
+%bcond_without	uclibc
+%bcond_without	dietlibc
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.6
-Release:	4
+Release:	5
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
