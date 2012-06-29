@@ -147,8 +147,8 @@ popd
 %endif
 
 %install
-install -d %{buildroot}/%{_prefix}
-install -d %{buildroot}/%{_libdir}
+install -d %{buildroot}%{_prefix}
+install -d %{buildroot}%{_libdir}
 
 make install -C objs prefix=%{buildroot}%{_prefix} libdir=%{buildroot}%{_libdir}
 %if %{build_biarch}
