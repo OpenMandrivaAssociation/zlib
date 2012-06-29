@@ -19,7 +19,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.7
-Release:	1
+Release:	2
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -200,6 +200,13 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %{_libdir}/*.a
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/zlib.pc
+# these needs to be installed, otherwise it won't be possible to link against
+# it if building for 32 bit on 64 bit
+%if %{build_biarch}
+%{_prefix}/lib/*.a
+%{_prefix}/lib/*.so
+%{_prefix}/lib/pkgconfig/zlib.pc
+%endif
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.so
 %endif
