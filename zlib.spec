@@ -19,7 +19,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.7
-Release:	3
+Release:	4
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -156,13 +156,13 @@ make install-libs -C objs32 prefix=%{buildroot}%{_prefix}
 %endif
 
 install -d %{buildroot}/%{_lib}
-mv %{buildroot}%{_libdir}/*.so.* %{buildroot}/%{_lib}/
-ln -s ../../%{_lib}/libz.so.%{version} %{buildroot}%{_libdir}/
+mv %{buildroot}%{_libdir}/libz.so.%{major}* %{buildroot}/%{_lib}/
+ln -srf %{buildroot}/%{_lib}/libz.so.%{major}.* %{buildroot}%{_libdir}/libz.so
 
 %if %{build_biarch}
 install -d %{buildroot}/lib
-mv %{buildroot}%{_prefix}/lib/*.so.* %{buildroot}/lib/
-ln -s ../../lib/libz.so.%{version} %{buildroot}%{_prefix}/lib/
+mv %{buildroot}%{_prefix}/lib/libz.so.%{major}* %{buildroot}/lib/
+ln -srf %{buildroot}/lib/libz.so.%{major}.* %{buildroot}%{_prefix}/lib/libz.so
 %endif
 
 %if %{with dietlibc}
@@ -177,12 +177,10 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %files -n %{libname}
 %doc README
 /%{_lib}/libz.so.%{major}*
-%{_libdir}/libz.so.%{major}*
 
 %if %{build_biarch}
 %files -n %{biarchname}
 /lib/libz.so.*
-%{_prefix}/lib/libz.so.%{major}*
 %endif
 
 %if %{with uclibc}
