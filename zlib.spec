@@ -27,7 +27,7 @@ Source0:	http://www.zlib.net/%{name}-%{version}.tar.gz
 Patch1:		zlib-1.2.6-multibuild.patch
 BuildRequires:	setarch
 %if %{with uclibc}
-BuildRequires:	uClibc-devel >= 0.9.32-2
+BuildRequires:	uClibc-devel >= 0.9.32-15
 %endif
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
