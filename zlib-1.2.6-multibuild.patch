@@ -1,0 +1,106 @@
+diff -Naur zlib-1.2.7/configure zlib-1.2.7.oden/configure
+--- zlib-1.2.7/configure	2012-05-02 06:17:08.000000000 +0200
++++ zlib-1.2.7.oden/configure	2012-06-20 16:09:06.000000000 +0200
+@@ -24,14 +24,16 @@
+     CROSS_PREFIX="${CHOST}-"
+ fi
+ 
++top_srcdir="`dirname $0`"
++
+ # destination name for static library
+ STATICLIB=libz.a
+ 
+ # extract zlib version numbers from zlib.h
+-VER=`sed -n -e '/VERSION "/s/.*"\(.*\)".*/\1/p' < zlib.h`
+-VER3=`sed -n -e '/VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < zlib.h`
+-VER2=`sed -n -e '/VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < zlib.h`
+-VER1=`sed -n -e '/VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < zlib.h`
++VER=`sed -n -e '/VERSION "/s/.*"\(.*\)".*/\1/p' < "$top_srcdir/zlib.h"`
++VER3=`sed -n -e '/VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < "$top_srcdir/zlib.h"`
++VER2=`sed -n -e '/VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < "$top_srcdir/zlib.h"`
++VER1=`sed -n -e '/VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < "$top_srcdir/zlib.h"`
+ 
+ # establish commands for library building
+ if "${CROSS_PREFIX}ar" --version >/dev/null 2>/dev/null || test $? -lt 126; then
+@@ -198,9 +200,9 @@
+   fi
+   case "$uname" in
+   Linux* | linux* | GNU | GNU/* | solaris*)
+-        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,zlib.map"} ;;
++        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,$top_srcdir/zlib.map"} ;;
+   *BSD | *bsd* | DragonFly)
+-        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,zlib.map"}
++        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,$top_srcdir/zlib.map"}
+         LDCONFIG="ldconfig -m" ;;
+   CYGWIN* | Cygwin* | cygwin* | OS/2*)
+         EXE='.exe' ;;
+@@ -428,7 +430,7 @@
+ fi
+ 
+ # copy clean zconf.h for subsequent edits
+-cp -p zconf.h.in zconf.h
++cp -p "$top_srcdir"/zconf.h.in zconf.h
+ 
+ echo >> configure.log
+ 
+@@ -763,7 +765,7 @@
+ echo >> configure.log
+ 
+ # udpate Makefile with the configure results
+-sed < Makefile.in "
++sed < "$top_srcdir"/Makefile.in "
+ /^CC *=/s#=.*#=$CC#
+ /^CFLAGS *=/s#=.*#=$CFLAGS#
+ /^SFLAGS *=/s#=.*#=$SFLAGS#
+@@ -793,7 +795,7 @@
+ " > Makefile
+ 
+ # create zlib.pc with the configure results
+-sed < zlib.pc.in "
++sed < $top_srcdir/zlib.pc.in "
+ /^CC *=/s#=.*#=$CC#
+ /^CFLAGS *=/s#=.*#=$CFLAGS#
+ /^CPP *=/s#=.*#=$CPP#
+@@ -816,3 +818,14 @@
+ " | sed -e "
+ s/\@VERSION\@/$VER/g;
+ " > zlib.pc
++
++# symlink sources
++if test "$top_srcdir" != "."; then
++  for f in $top_srcdir/*.[ch]; do
++    ln -s $f `basename $f`
++  done
++  mkdir test
++  for f in `readlink -f $top_srcdir`/test/*.[ch]; do
++    ln -s $f test/`basename $f`
++  done
++fi
+diff -Naur zlib-1.2.7/Makefile.in zlib-1.2.7.oden/Makefile.in
+--- zlib-1.2.7/Makefile.in	2012-04-23 07:58:06.000000000 +0200
++++ zlib-1.2.7.oden/Makefile.in	2012-06-20 16:05:03.000000000 +0200
+@@ -184,12 +184,10 @@
+ minigzip64$(EXE): minigzip64.o $(STATICLIB)
+ 	$(CC) $(CFLAGS) -o $@ minigzip64.o $(TEST_LDFLAGS)
+ 
+-install-libs: $(LIBS)
++install-libs-only: $(LIBS)
+ 	-@if [ ! -d $(DESTDIR)$(exec_prefix)  ]; then mkdir -p $(DESTDIR)$(exec_prefix); fi
+ 	-@if [ ! -d $(DESTDIR)$(libdir)       ]; then mkdir -p $(DESTDIR)$(libdir); fi
+ 	-@if [ ! -d $(DESTDIR)$(sharedlibdir) ]; then mkdir -p $(DESTDIR)$(sharedlibdir); fi
+-	-@if [ ! -d $(DESTDIR)$(man3dir)      ]; then mkdir -p $(DESTDIR)$(man3dir); fi
+-	-@if [ ! -d $(DESTDIR)$(pkgconfigdir) ]; then mkdir -p $(DESTDIR)$(pkgconfigdir); fi
+ 	cp $(STATICLIB) $(DESTDIR)$(libdir)
+ 	chmod 644 $(DESTDIR)$(libdir)/$(STATICLIB)
+ 	-@($(RANLIB) $(DESTDIR)$(libdir)/libz.a || true) >/dev/null 2>&1
+@@ -203,6 +201,10 @@
+ 	  ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM); \
+ 	  ($(LDCONFIG) || true)  >/dev/null 2>&1; \
+ 	fi
++
++install-libs: install-libs-only
++	-@if [ ! -d $(DESTDIR)$(man3dir)      ]; then mkdir -p $(DESTDIR)$(man3dir); fi
++	-@if [ ! -d $(DESTDIR)$(pkgconfigdir) ]; then mkdir -p $(DESTDIR)$(pkgconfigdir); fi
+ 	cp zlib.3 $(DESTDIR)$(man3dir)
+ 	chmod 644 $(DESTDIR)$(man3dir)/zlib.3
+ 	cp zlib.pc $(DESTDIR)$(pkgconfigdir)
