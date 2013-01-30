@@ -82,6 +82,9 @@ uClibc library.
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{libname} = %{version}-%{release}
+%if %{build_biarch}
+Requires:	%{biarchname} = %{version}-%{release}
+%endif
 %if %{with uclibc}
 Requires:	uclibc-%{libname} = %{version}
 %endif
