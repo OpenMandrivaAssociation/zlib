@@ -1,0 +1,18 @@
+--- zlib-1.2.7/zlib.pc.cmakein.libpath~	2013-01-30 13:08:42.682293148 +0100
++++ zlib-1.2.7/zlib.pc.cmakein	2013-01-30 13:09:06.838318023 +0100
+@@ -9,5 +9,5 @@ Description: zlib compression library
+ Version: @VERSION@
+ 
+ Requires:
+-Libs: -L${libdir} -L${sharedlibdir} -lz
++Libs: -L${libdir} -lz
+ Cflags: -I${includedir}
+--- zlib-1.2.7/zlib.pc.in.libpath~	2013-01-30 13:08:46.387296963 +0100
++++ zlib-1.2.7/zlib.pc.in	2013-01-30 13:08:55.090305925 +0100
+@@ -9,5 +9,5 @@ Description: zlib compression library
+ Version: @VERSION@
+ 
+ Requires:
+-Libs: -L${libdir} -L${sharedlibdir} -lz
++Libs: -L${libdir} -lz
+ Cflags: -I${includedir}

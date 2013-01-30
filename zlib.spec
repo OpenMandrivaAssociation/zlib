@@ -19,12 +19,13 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.7
-Release:	7
+Release:	8
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
 Source0:	http://www.zlib.net/%{name}-%{version}.tar.gz
 Patch1:		zlib-1.2.6-multibuild.patch
+Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
 BuildRequires:	setarch
 %if %{with uclibc}
 BuildRequires:	uClibc-devel >= 0.9.33.2-15
@@ -99,6 +100,7 @@ will use the zlib library.
 %prep
 %setup -q
 %patch1 -p1 -b .multibuild~
+%patch2 -p1 -b .pc_libpath~
 
 %build
 #(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
