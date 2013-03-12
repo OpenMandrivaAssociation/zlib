@@ -3,6 +3,8 @@
 %define libname		%mklibname %{shortname}%{major}
 %define biarchname	lib%{shortname}%{major}
 %define develname	%mklibname %{shortname} -d
+%define libminizip	%mklibname minizip %{major}
+%define minizip_devel	%mklibname minizip -d
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -15,11 +17,12 @@
 
 %bcond_without	uclibc
 %bcond_without	dietlibc
+%bcond_without	minizip
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.7
-Release:	8
+Release:	9
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -32,6 +35,30 @@ BuildRequires:	uClibc-devel >= 0.9.33.2-15
 %endif
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
+%endif
+%if %{with minizip}
+BuildRequires:	zlib-devel
+%endif
+
+%if %{with minizip}
+%package -n     %{libminizip}
+Summary:        Minizip manipulates files from a .zip archive
+Group:          System/Libraries
+
+%description -n %{libminizip}
+Minizip manipulates files from a .zip archive.
+
+%package -n     %{minizip_devel}
+Summary:        Development files for the minizip library
+Group:          Development/C
+Requires:       %{libminizip} = %{version}-%{release}
+Requires:       zlib-devel = %{version}-%{release}
+Provides:       libminizip-devel = %{version}-%{release}
+Provides:       minizip-devel = %{version}-%{release}
+
+%description -n %{minizip_devel}
+This package contains the libraries and header files needed for
+developing applications which use minizip.
 %endif
 
 %description
@@ -154,6 +181,14 @@ pushd objsuclibc
 popd
 %endif
 
+%if %{with minizip}
+pushd contrib/minizip
+autoreconf --install
+%configure --enable-static=no
+%make
+popd
+%endif
+
 %install
 install -d %{buildroot}%{_prefix}
 install -d %{buildroot}%{_libdir}
@@ -181,6 +216,13 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 #install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
 make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
 %endif
+
+%if %{with minizip}
+pushd contrib/minizip
+%makeinstall_std
+popd
+%endif
+
 
 %files -n %{libname}
 %doc README
@@ -212,12 +254,25 @@ make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.so
 %endif
-%{_includedir}/*
+%{_includedir}/*.h
 %if %{with dietlibc}
 %{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
 %endif
 %if %{with uclibc}
 %{uclibc_root}%{_libdir}/libz.a
+%endif
+%if %{with minizip}
+%exclude %{_libdir}/libminizip.so
+%endif
+
+%if %{with minizip}
+%files -n %{libminizip}
+%{_libdir}/libminizip.so.%{major}*
+
+%files -n %{minizip_devel}
+%{_libdir}/pkgconfig/minizip.pc
+%{_libdir}/libminizip.so
+%{_includedir}/minizip
 %endif
 
 %changelog
