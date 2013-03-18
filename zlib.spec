@@ -143,8 +143,8 @@ pushd objs
 %endif
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
   export LDFLAGS="$LDFLAGS -Wl,-z,relro"
-  export CC="%{__cc}"
-  sed -i 's/gcc/%{__cc}/g' Makefile
+  sed -i 's/CC=gcc/CC=%{__cc}/g' Makefile
+  sed -i 's/LDSHARED=gcc/LDSHARED=%{__cc}/g' Makefile
   %make 
   make test
   ln -s ../zlib.3 .
