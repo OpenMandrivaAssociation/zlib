@@ -16,7 +16,7 @@
 %endif
 
 %bcond_without	uclibc
-%bcond_with	dietlibc
+%bcond_without	dietlibc
 %bcond_without	minizip
 
 Summary:	The zlib compression and decompression library
