@@ -16,7 +16,7 @@
 %endif
 
 %bcond_without	uclibc
-%bcond_without	dietlibc
+%bcond_with	dietlibc
 %bcond_without	minizip
 
 Summary:	The zlib compression and decompression library
@@ -142,7 +142,10 @@ pushd objs
   CC="%{__cc} -m64" \
 %endif
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
-  %make
+  export LDFLAGS="$LDFLAGS -Wl,-z,relro"
+  export CC="%{__cc}"
+  sed -i 's/gcc/%{__cc}/g' Makefile
+  %make 
   make test
   ln -s ../zlib.3 .
 popd
