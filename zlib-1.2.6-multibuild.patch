@@ -1,7 +1,6 @@
-diff -Naur zlib-1.2.7/configure zlib-1.2.7.oden/configure
---- zlib-1.2.7/configure	2012-05-02 06:17:08.000000000 +0200
-+++ zlib-1.2.7.oden/configure	2012-06-20 16:09:06.000000000 +0200
-@@ -24,14 +24,16 @@
+--- zlib-1.2.8/configure.multibuild~	2013-03-24 06:30:09.000000000 +0100
++++ zlib-1.2.8/configure	2013-04-30 22:05:30.617860530 +0200
+@@ -24,14 +24,16 @@ if [ -n "${CHOST}" ]; then
      CROSS_PREFIX="${CHOST}-"
  fi
  
@@ -22,7 +21,7 @@ diff -Naur zlib-1.2.7/configure zlib-1.2.7.oden/configure
  
  # establish commands for library building
  if "${CROSS_PREFIX}ar" --version >/dev/null 2>/dev/null || test $? -lt 126; then
-@@ -198,9 +200,9 @@
+@@ -184,9 +186,9 @@ if test "$gcc" -eq 1 && ($cc -c $test.c)
    fi
    case "$uname" in
    Linux* | linux* | GNU | GNU/* | solaris*)
@@ -34,7 +33,7 @@ diff -Naur zlib-1.2.7/configure zlib-1.2.7.oden/configure
          LDCONFIG="ldconfig -m" ;;
    CYGWIN* | Cygwin* | cygwin* | OS/2*)
          EXE='.exe' ;;
-@@ -428,7 +430,7 @@
+@@ -470,7 +472,7 @@ else
  fi
  
  # copy clean zconf.h for subsequent edits
@@ -43,8 +42,8 @@ diff -Naur zlib-1.2.7/configure zlib-1.2.7.oden/configure
  
  echo >> configure.log
  
-@@ -763,7 +765,7 @@
- echo >> configure.log
+@@ -773,7 +775,7 @@ echo sharedlibdir = $sharedlibdir >> con
+ echo uname = $uname >> configure.log
  
  # udpate Makefile with the configure results
 -sed < Makefile.in "
@@ -52,7 +51,7 @@ diff -Naur zlib-1.2.7/configure zlib-1.2.7.oden/configure
  /^CC *=/s#=.*#=$CC#
  /^CFLAGS *=/s#=.*#=$CFLAGS#
  /^SFLAGS *=/s#=.*#=$SFLAGS#
-@@ -793,7 +795,7 @@
+@@ -803,7 +805,7 @@ sed < Makefile.in "
  " > Makefile
  
  # create zlib.pc with the configure results
@@ -61,11 +60,10 @@ diff -Naur zlib-1.2.7/configure zlib-1.2.7.oden/configure
  /^CC *=/s#=.*#=$CC#
  /^CFLAGS *=/s#=.*#=$CFLAGS#
  /^CPP *=/s#=.*#=$CPP#
-@@ -816,3 +818,14 @@
- " | sed -e "
+@@ -827,5 +829,16 @@ sed < zlib.pc.in "
  s/\@VERSION\@/$VER/g;
  " > zlib.pc
-+
+ 
 +# symlink sources
 +if test "$top_srcdir" != "."; then
 +  for f in $top_srcdir/*.[ch]; do
@@ -76,10 +74,12 @@ diff -Naur zlib-1.2.7/configure zlib-1.2.7.oden/configure
 +    ln -s $f test/`basename $f`
 +  done
 +fi
-diff -Naur zlib-1.2.7/Makefile.in zlib-1.2.7.oden/Makefile.in
---- zlib-1.2.7/Makefile.in	2012-04-23 07:58:06.000000000 +0200
-+++ zlib-1.2.7.oden/Makefile.in	2012-06-20 16:05:03.000000000 +0200
-@@ -184,12 +184,10 @@
++
+ # done
+ leave 0
+--- zlib-1.2.8/Makefile.in.multibuild~	2013-04-29 00:57:11.000000000 +0200
++++ zlib-1.2.8/Makefile.in	2013-04-30 10:35:35.207374377 +0200
+@@ -184,12 +184,10 @@ example64$(EXE): example64.o $(STATICLIB
  minigzip64$(EXE): minigzip64.o $(STATICLIB)
  	$(CC) $(CFLAGS) -o $@ minigzip64.o $(TEST_LDFLAGS)
  
@@ -93,7 +93,7 @@ diff -Naur zlib-1.2.7/Makefile.in zlib-1.2.7.oden/Makefile.in
  	cp $(STATICLIB) $(DESTDIR)$(libdir)
  	chmod 644 $(DESTDIR)$(libdir)/$(STATICLIB)
  	-@($(RANLIB) $(DESTDIR)$(libdir)/libz.a || true) >/dev/null 2>&1
-@@ -203,6 +201,10 @@
+@@ -203,6 +201,10 @@ install-libs: $(LIBS)
  	  ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM); \
  	  ($(LDCONFIG) || true)  >/dev/null 2>&1; \
  	fi
