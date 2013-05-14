@@ -137,7 +137,7 @@ will use the zlib library.
 RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS| sed -e 's/-m.. //g'` -O3"
 mkdir objs
 pushd objs
-  CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
+  CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" CC="%{__cc}" \
 %if %{build_biarch}
   CC="%{__cc} -m64" \
 %endif
