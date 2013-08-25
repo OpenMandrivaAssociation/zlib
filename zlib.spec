@@ -1,10 +1,10 @@
-%define shortname	z
+%define shortname z
 %define major 1
-%define libname		%mklibname %{shortname}%{major}
-%define biarchname	lib%{shortname}%{major}
-%define develname	%mklibname %{shortname} -d
-%define libminizip	%mklibname minizip %{major}
-%define minizip_devel	%mklibname minizip -d
+%define libname %mklibname %{shortname}%{major}
+%define biarchname lib%{shortname}%{major}
+%define develname %mklibname %{shortname} -d
+%define libminizip %mklibname minizip %{major}
+%define minizip_devel %mklibname minizip -d
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -12,17 +12,17 @@
 %define build_biarch 1
 %endif
 %ifarch sparcv9
-%define	_lib	lib64
+%define _lib	lib64
 %endif
 
-%bcond_without	uclibc
-%bcond_without	dietlibc
-%bcond_without	minizip
+%bcond_without uclibc
+%bcond_without dietlibc
+%bcond_without minizip
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	1
+Release:	2
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -41,20 +41,20 @@ BuildRequires:	zlib-devel
 %endif
 
 %if %{with minizip}
-%package -n     %{libminizip}
-Summary:        Minizip manipulates files from a .zip archive
-Group:          System/Libraries
+%package -n %{libminizip}
+Summary:	Minizip manipulates files from a .zip archive
+Group:		System/Libraries
 
 %description -n %{libminizip}
 Minizip manipulates files from a .zip archive.
 
-%package -n     %{minizip_devel}
-Summary:        Development files for the minizip library
-Group:          Development/C
-Requires:       %{libminizip} = %{version}-%{release}
-Requires:       zlib-devel = %{version}-%{release}
-Provides:       libminizip-devel = %{version}-%{release}
-Provides:       minizip-devel = %{version}-%{release}
+%package -n %{minizip_devel}
+Summary:	Development files for the minizip library
+Group:		Development/C
+Requires:	%{libminizip} = %{version}-%{release}
+Requires:	zlib-devel = %{version}-%{release}
+Provides:	libminizip-devel = %{version}-%{release}
+Provides:	minizip-devel = %{version}-%{release}
 
 %description -n %{minizip_devel}
 This package contains the libraries and header files needed for
@@ -69,7 +69,7 @@ data.  This version of the library supports only one compression method
 the same stream interface.  The zlib library is used by many different
 system programs.
 
-%package -n	%{libname}
+%package -n %{libname}
 Summary:	The zlib compression and decompression library
 Group:		System/Libraries
 %rename		%{_lib}zlib1
@@ -85,7 +85,7 @@ the same stream interface.  The zlib library is used by many different
 system programs.
 
 %if %{build_biarch}
-%package -n	%{biarchname}
+%package -n %{biarchname}
 Summary:	The zlib compression and decompression library - biarch
 Group:		System/Libraries
 Conflicts:	zlib1 < 1.2.6-3
@@ -95,7 +95,7 @@ This package contains the zlib biarch library.
 %endif
 
 %if %{with uclibc}
-%package -n	uclibc-%{libname}
+%package -n uclibc-%{libname}
 Summary:	The zlib compression and decompression library linked against uClibc
 Group:		System/Libraries
 Conflicts:	zlib1 < 1.2.6-4
@@ -105,7 +105,7 @@ This package contains a version of the zlib library that's built against the
 uClibc library.
 %endif
 
-%package -n	%{develname}
+%package -n %{develname}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{libname} = %{version}-%{release}
@@ -145,7 +145,7 @@ pushd objs
   export LDFLAGS="$LDFLAGS -Wl,-z,relro"
   sed -i 's/CC=gcc/CC=%{__cc}/g' Makefile
   sed -i 's/LDSHARED=gcc/LDSHARED=%{__cc}/g' Makefile
-  %make 
+  %make
   make test
   ln -s ../zlib.3 .
 popd
