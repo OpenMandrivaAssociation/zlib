@@ -22,7 +22,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	8
+Release:	9
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -31,6 +31,8 @@ Patch1:		zlib-1.2.6-multibuild.patch
 Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
 Patch3:		zlib-1.2.7-improve-longest_match-performance.patch
 Patch4:		zlib-format.patch
+# This speeds up "minigzip -d linux-3.14.tar.gz" by around 10%
+Patch5:		zlib-1.2.8-memcpy.patch
 BuildRequires:	setarch
 %if %{with uclibc}
 BuildRequires:	uClibc-devel >= 0.9.33.2-15
@@ -144,8 +146,8 @@ pushd objs
 %endif
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
   export LDFLAGS="$LDFLAGS -Wl,-z,relro"
-  sed -i 's/CC=gcc/CC=%{__cc}/g' Makefile
-  sed -i 's/LDSHARED=gcc/LDSHARED=%{__cc}/g' Makefile
+  sed -i 's|CC=gcc|CC=%{__cc}|g' Makefile
+  sed -i 's|LDSHARED=gcc|LDSHARED=%{__cc}|g' Makefile
   %make
   make test
   ln -s ../zlib.3 .
