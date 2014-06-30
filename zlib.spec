@@ -161,7 +161,10 @@ RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags|sed -e 's#i586#pentium4#g'`
 %endif
 mkdir objs32
 pushd objs32
-  CFLAGS="$RPM_OPT_FLAGS_32" LDFLAGS="%{?ldflags}" CC="%{__cc} -m32" \
+  # FIXME as of 3.5-0.211571.1, clang -m32 is broken
+  # (calls linker in 64bit mode).
+  # Force gcc for 32bit builds for now.
+  CFLAGS="$RPM_OPT_FLAGS_32" LDFLAGS="%{?ldflags}" CC="gcc -m32" \
   ../configure --shared --prefix=%{_prefix}
   %make
   make test
