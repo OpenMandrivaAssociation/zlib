@@ -1,6 +1,6 @@
 %define shortname z
 %define major 1
-%define libname %mklibname %{shortname}%{major}
+%define libname %mklibname %{shortname} %{major}
 %define biarchname lib%{shortname}%{major}
 %define develname %mklibname %{shortname} -d
 %define libminizip %mklibname minizip %{major}
