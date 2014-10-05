@@ -22,7 +22,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	10
+Release:	11
 Group:		System/Libraries
 License:	BSD
 URL:		http://www.gzip.org/zlib/
@@ -79,6 +79,7 @@ Group:		System/Libraries
 %rename		%{_lib}zlib1
 %rename		%{name}
 %rename		%{name}1
+%rename		%{_lib}z1_
 
 %description -n	%{libname}
 The zlib compression library provides in-memory compression and
