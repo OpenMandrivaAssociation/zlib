@@ -2,9 +2,9 @@
 %define major 1
 %define libname %mklibname %{shortname} %{major}
 %define biarchname lib%{shortname}%{major}
-%define develname %mklibname %{shortname} -d
+%define devname %mklibname %{shortname} -d
 %define libminizip %mklibname minizip %{major}
-%define minizip_devel %mklibname minizip -d
+%define devminizip %mklibname minizip -d
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -22,10 +22,10 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	11
+Release:	12
 Group:		System/Libraries
 License:	BSD
-URL:		http://www.gzip.org/zlib/
+Url:		http://www.gzip.org/zlib/
 Source0:	http://www.zlib.net/%{name}-%{version}.tar.gz
 Patch1:		zlib-1.2.6-multibuild.patch
 Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
@@ -41,7 +41,7 @@ BuildRequires:	uClibc-devel >= 0.9.33.2-15
 BuildRequires:	dietlibc-devel
 %endif
 %if %{with minizip}
-BuildRequires:	zlib-devel
+BuildRequires:	pkgconfig(zlib)
 %endif
 
 %if %{with minizip}
@@ -52,15 +52,14 @@ Group:		System/Libraries
 %description -n %{libminizip}
 Minizip manipulates files from a .zip archive.
 
-%package -n %{minizip_devel}
+%package -n %{devminizip}
 Summary:	Development files for the minizip library
 Group:		Development/C
 Requires:	%{libminizip} = %{version}-%{release}
-Requires:	zlib-devel = %{version}-%{release}
-Provides:	libminizip-devel = %{version}-%{release}
+Requires:	%{devname} = %{version}-%{release}
 Provides:	minizip-devel = %{version}-%{release}
 
-%description -n %{minizip_devel}
+%description -n %{devminizip}
 This package contains the libraries and header files needed for
 developing applications which use minizip.
 %endif
@@ -110,7 +109,7 @@ This package contains a version of the zlib library that's built against the
 uClibc library.
 %endif
 
-%package -n %{develname}
+%package -n %{devname}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{libname} = %{version}-%{release}
@@ -118,26 +117,26 @@ Requires:	%{libname} = %{version}-%{release}
 Requires:	%{biarchname} = %{version}-%{release}
 %endif
 %if %{with uclibc}
-Requires:	uclibc-%{libname} = %{version}
+# <proyvind> if zlib-devel is the only package with dependencies on uClibc() 
+# that's responsible for pulling in those packages, you can probably ditch the
+#  dependency on the uClibc -devel package, other packages will automatically 
+#pull it in anyways..
+#Requires:	uclibc-%{libname} = %{version}
 %endif
 %rename		%{_lib}zlib-devel
 %rename		%{name}-devel
 %rename		%{name}1-devel
 
-%description -n	%{develname}
-The zlib-devel package contains the header files and libraries needed
-to develop programs that use the zlib compression and decompression
-library.
-
-Install the zlib-devel package if you want to develop applications that
-will use the zlib library.
+%description -n	%{devname}
+This package contains the header files and libraries needed to develop programs
+that use the zlib compression and decompression library.
 
 %prep
 %setup -q
 %apply_patches
 
 %build
-#(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
+#(peroyvind):	be sure to remove -m64/-m32 flags as they're not overridable
 RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS| sed -e 's/-m.. //g'` -O3"
 mkdir objs
 pushd objs
@@ -248,7 +247,7 @@ popd
 %{uclibc_root}%{_libdir}/libz.so.%{major}*
 %endif
 
-%files -n %{develname}
+%files -n %{devname}
 %doc README ChangeLog doc/algorithm.txt
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
@@ -279,7 +278,7 @@ popd
 %files -n %{libminizip}
 %{_libdir}/libminizip.so.%{major}*
 
-%files -n %{minizip_devel}
+%files -n %{devminizip}
 %{_libdir}/pkgconfig/minizip.pc
 %{_libdir}/libminizip.so
 %{_includedir}/minizip
