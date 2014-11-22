@@ -22,7 +22,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	12
+Release:	13
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -33,6 +33,12 @@ Patch3:		zlib-1.2.7-improve-longest_match-performance.patch
 Patch4:		zlib-format.patch
 # This speeds up "minigzip -d linux-3.14.tar.gz" by around 10%
 Patch5:		zlib-1.2.8-memcpy.patch
+Patch6:		zlib-1.2.5-minizip-fixuncrypt.patch
+# resolves: RH#844791
+Patch7:		zlib-1.2.7-z-block-flush.patch
+# resolves: #985344
+# http://mail.madler.net/pipermail/zlib-devel_madler.net/2013-August/003081.html
+Patch8:		zlib-1.2.8-minizip-include.patch
 BuildRequires:	setarch
 %if %{with uclibc}
 BuildRequires:	uClibc-devel >= 0.9.33.2-15
