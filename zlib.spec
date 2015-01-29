@@ -22,7 +22,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	14
+Release:	15
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -39,6 +39,7 @@ Patch7:		zlib-1.2.7-z-block-flush.patch
 # resolves: #985344
 # http://mail.madler.net/pipermail/zlib-devel_madler.net/2013-August/003081.html
 Patch8:		zlib-1.2.8-minizip-include.patch
+Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
 BuildRequires:	setarch
 %if %{with uclibc}
 BuildRequires:	uClibc-devel >= 0.9.33.2-15

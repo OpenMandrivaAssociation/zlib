@@ -1,0 +1,321 @@
+diff -pu zlib-src/deflate.c zlib/deflate.c
+--- zlib-src/deflate.c	2013-04-29 00:57:10.000000000 +0200
++++ zlib/deflate.c	2013-06-10 07:27:33.000000000 +0200
+@@ -51,6 +51,8 @@
+ 
+ #include "deflate.h"
+ 
++#define read_buf dread_buf
++
+ const char deflate_copyright[] =
+    " deflate 1.2.8 Copyright 1995-2013 Jean-loup Gailly and Mark Adler ";
+ /*
+@@ -670,7 +672,7 @@ int ZEXPORT deflate (strm, flush)
+     deflate_state *s;
+ 
+     if (strm == Z_NULL || strm->state == Z_NULL ||
+-        flush > Z_BLOCK || flush < 0) {
++        (flush > Z_BLOCK && flush != Z_INSERT_ONLY) || flush < 0) {
+         return Z_STREAM_ERROR;
+     }
+     s = strm->state;
+@@ -1593,6 +1595,11 @@ local block_state deflate_stored(s, flus
+         s->strstart += s->lookahead;
+         s->lookahead = 0;
+ 
++	if (flush == Z_INSERT_ONLY) {
++	    s->block_start = s->strstart;
++	    continue;
++	}
++
+         /* Emit a stored block if pending_buf will be full: */
+         max_start = s->block_start + max_block_size;
+         if (s->strstart == 0 || (ulg)s->strstart >= max_start) {
+@@ -1609,6 +1616,10 @@ local block_state deflate_stored(s, flus
+         }
+     }
+     s->insert = 0;
++    if (flush == Z_INSERT_ONLY) {
++	s->block_start = s->strstart;
++	return need_more;
++    }
+     if (flush == Z_FINISH) {
+         FLUSH_BLOCK(s, 1);
+         return finish_done;
+@@ -1654,6 +1665,12 @@ local block_state deflate_fast(s, flush)
+             INSERT_STRING(s, s->strstart, hash_head);
+         }
+ 
++	if (flush == Z_INSERT_ONLY) {
++	    s->strstart++;
++	    s->lookahead--;
++	    continue;
++	}
++
+         /* Find the longest match, discarding those <= prev_length.
+          * At this point we have always match_length < MIN_MATCH
+          */
+@@ -1711,6 +1728,10 @@ local block_state deflate_fast(s, flush)
+         }
+         if (bflush) FLUSH_BLOCK(s, 0);
+     }
++    if (flush == Z_INSERT_ONLY) {
++	s->block_start = s->strstart;
++	return need_more;
++    }
+     s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
+     if (flush == Z_FINISH) {
+         FLUSH_BLOCK(s, 1);
+@@ -1757,6 +1778,12 @@ local block_state deflate_slow(s, flush)
+             INSERT_STRING(s, s->strstart, hash_head);
+         }
+ 
++	if (flush == Z_INSERT_ONLY) {
++	    s->strstart++;
++	    s->lookahead--;
++	    continue;
++	}
++
+         /* Find the longest match, discarding those <= prev_length.
+          */
+         s->prev_length = s->match_length, s->prev_match = s->match_start;
+@@ -1836,6 +1863,10 @@ local block_state deflate_slow(s, flush)
+             s->lookahead--;
+         }
+     }
++    if (flush == Z_INSERT_ONLY) {
++	s->block_start = s->strstart;
++	return need_more;
++    }
+     Assert (flush != Z_NO_FLUSH, "no flush?");
+     if (s->match_available) {
+         Tracevv((stderr,"%c", s->window[s->strstart-1]));
+diff -pu zlib-src/inflate.c zlib/inflate.c
+--- zlib-src/inflate.c	2012-08-13 09:02:40.000000000 +0200
++++ zlib/inflate.c	2013-06-10 07:27:33.000000000 +0200
+@@ -702,6 +702,7 @@ int flush;
+             if (state->flags & 0x0200) CRC2(state->check, hold);
+             INITBITS();
+             state->mode = TIME;
++	    /* FALL THROUGH */
+         case TIME:
+             NEEDBITS(32);
+             if (state->head != Z_NULL)
+@@ -709,6 +710,7 @@ int flush;
+             if (state->flags & 0x0200) CRC4(state->check, hold);
+             INITBITS();
+             state->mode = OS;
++	    /* FALL THROUGH */
+         case OS:
+             NEEDBITS(16);
+             if (state->head != Z_NULL) {
+@@ -718,6 +720,7 @@ int flush;
+             if (state->flags & 0x0200) CRC2(state->check, hold);
+             INITBITS();
+             state->mode = EXLEN;
++	    /* FALL THROUGH */
+         case EXLEN:
+             if (state->flags & 0x0400) {
+                 NEEDBITS(16);
+@@ -730,6 +733,7 @@ int flush;
+             else if (state->head != Z_NULL)
+                 state->head->extra = Z_NULL;
+             state->mode = EXTRA;
++	    /* FALL THROUGH */
+         case EXTRA:
+             if (state->flags & 0x0400) {
+                 copy = state->length;
+@@ -752,6 +756,7 @@ int flush;
+             }
+             state->length = 0;
+             state->mode = NAME;
++	    /* FALL THROUGH */
+         case NAME:
+             if (state->flags & 0x0800) {
+                 if (have == 0) goto inf_leave;
+@@ -773,6 +778,7 @@ int flush;
+                 state->head->name = Z_NULL;
+             state->length = 0;
+             state->mode = COMMENT;
++	    /* FALL THROUGH */
+         case COMMENT:
+             if (state->flags & 0x1000) {
+                 if (have == 0) goto inf_leave;
+@@ -793,6 +799,7 @@ int flush;
+             else if (state->head != Z_NULL)
+                 state->head->comment = Z_NULL;
+             state->mode = HCRC;
++	    /* FALL THROUGH */
+         case HCRC:
+             if (state->flags & 0x0200) {
+                 NEEDBITS(16);
+@@ -816,6 +823,7 @@ int flush;
+             strm->adler = state->check = ZSWAP32(hold);
+             INITBITS();
+             state->mode = DICT;
++	    /* FALL THROUGH */
+         case DICT:
+             if (state->havedict == 0) {
+                 RESTORE();
+@@ -823,8 +831,10 @@ int flush;
+             }
+             strm->adler = state->check = adler32(0L, Z_NULL, 0);
+             state->mode = TYPE;
++	    /* FALL THROUGH */
+         case TYPE:
+             if (flush == Z_BLOCK || flush == Z_TREES) goto inf_leave;
++	    /* FALL THROUGH */
+         case TYPEDO:
+             if (state->last) {
+                 BYTEBITS();
+@@ -877,6 +887,7 @@ int flush;
+             if (flush == Z_TREES) goto inf_leave;
+         case COPY_:
+             state->mode = COPY;
++	    /* FALL THROUGH */
+         case COPY:
+             copy = state->length;
+             if (copy) {
+@@ -912,6 +923,7 @@ int flush;
+             Tracev((stderr, "inflate:       table sizes ok\n"));
+             state->have = 0;
+             state->mode = LENLENS;
++	    /* FALL THROUGH */
+         case LENLENS:
+             while (state->have < state->ncode) {
+                 NEEDBITS(3);
+@@ -933,6 +945,7 @@ int flush;
+             Tracev((stderr, "inflate:       code lengths ok\n"));
+             state->have = 0;
+             state->mode = CODELENS;
++	    /* FALL THROUGH */
+         case CODELENS:
+             while (state->have < state->nlen + state->ndist) {
+                 for (;;) {
+@@ -1016,8 +1029,10 @@ int flush;
+             Tracev((stderr, "inflate:       codes ok\n"));
+             state->mode = LEN_;
+             if (flush == Z_TREES) goto inf_leave;
++	    /* FALL THROUGH */
+         case LEN_:
+             state->mode = LEN;
++	    /* FALL THROUGH */
+         case LEN:
+             if (have >= 6 && left >= 258) {
+                 RESTORE();
+@@ -1067,6 +1082,7 @@ int flush;
+             }
+             state->extra = (unsigned)(here.op) & 15;
+             state->mode = LENEXT;
++	    /* FALL THROUGH */
+         case LENEXT:
+             if (state->extra) {
+                 NEEDBITS(state->extra);
+@@ -1077,6 +1093,7 @@ int flush;
+             Tracevv((stderr, "inflate:         length %u\n", state->length));
+             state->was = state->length;
+             state->mode = DIST;
++	    /* FALL THROUGH */
+         case DIST:
+             for (;;) {
+                 here = state->distcode[BITS(state->distbits)];
+@@ -1104,6 +1121,7 @@ int flush;
+             state->offset = (unsigned)here.val;
+             state->extra = (unsigned)(here.op) & 15;
+             state->mode = DISTEXT;
++	    /* FALL THROUGH */
+         case DISTEXT:
+             if (state->extra) {
+                 NEEDBITS(state->extra);
+@@ -1120,6 +1138,7 @@ int flush;
+ #endif
+             Tracevv((stderr, "inflate:         distance %u\n", state->offset));
+             state->mode = MATCH;
++	    /* FALL THROUGH */
+         case MATCH:
+             if (left == 0) goto inf_leave;
+             copy = out - left;
+@@ -1195,6 +1214,7 @@ int flush;
+             }
+ #ifdef GUNZIP
+             state->mode = LENGTH;
++	    /* FALL THROUGH */
+         case LENGTH:
+             if (state->wrap && state->flags) {
+                 NEEDBITS(32);
+@@ -1208,6 +1228,7 @@ int flush;
+             }
+ #endif
+             state->mode = DONE;
++	    /* FALL THROUGH */
+         case DONE:
+             ret = Z_STREAM_END;
+             goto inf_leave;
+diff -pu zlib-src/inflate.h zlib/inflate.h
+--- zlib-src/inflate.h	2009-12-26 01:32:08.000000000 +0100
++++ zlib/inflate.h	2013-06-10 07:27:33.000000000 +0200
+@@ -16,6 +16,10 @@
+ #  define GUNZIP
+ #endif
+ 
++#ifdef BAD /* For AIX */
++#undef BAD
++#endif
++
+ /* Possible inflate modes between inflate() calls */
+ typedef enum {
+     HEAD,       /* i: waiting for magic header */
+diff -pu zlib-src/zlib.h zlib/zlib.h
+--- zlib-src/zlib.h	2013-04-29 02:23:49.000000000 +0200
++++ zlib/zlib.h	2013-06-10 07:27:33.000000000 +0200
+@@ -169,6 +169,7 @@ typedef gz_header FAR *gz_headerp;
+ #define Z_BLOCK         5
+ #define Z_TREES         6
+ /* Allowed flush values; see deflate() and inflate() below for details */
++#define Z_INSERT_ONLY	7
+ 
+ #define Z_OK            0
+ #define Z_STREAM_END    1
+diff -pu zlib-src/zutil.c zlib/zutil.c
+--- zlib-src/zutil.c	2012-08-13 09:02:40.000000000 +0200
++++ zlib/zutil.c	2013-06-10 07:27:33.000000000 +0200
+@@ -38,27 +38,27 @@ uLong ZEXPORT zlibCompileFlags()
+ 
+     flags = 0;
+     switch ((int)(sizeof(uInt))) {
+-    case 2:     break;
+-    case 4:     flags += 1;     break;
+-    case 8:     flags += 2;     break;
++    case 2:     break;				/* CONSTANT CONDITION */
++    case 4:     flags += 1;     break;		/* CONSTANT CONDITION */
++    case 8:     flags += 2;     break;		/* CONSTANT CONDITION */
+     default:    flags += 3;
+     }
+     switch ((int)(sizeof(uLong))) {
+-    case 2:     break;
+-    case 4:     flags += 1 << 2;        break;
+-    case 8:     flags += 2 << 2;        break;
++    case 2:     break;				/* CONSTANT CONDITION */
++    case 4:     flags += 1 << 2;        break;	/* CONSTANT CONDITION */
++    case 8:     flags += 2 << 2;        break;	/* CONSTANT CONDITION */
+     default:    flags += 3 << 2;
+     }
+     switch ((int)(sizeof(voidpf))) {
+-    case 2:     break;
+-    case 4:     flags += 1 << 4;        break;
+-    case 8:     flags += 2 << 4;        break;
++    case 2:     break;				/* CONSTANT CONDITION */
++    case 4:     flags += 1 << 4;        break;	/* CONSTANT CONDITION */
++    case 8:     flags += 2 << 4;        break;	/* CONSTANT CONDITION */
+     default:    flags += 3 << 4;
+     }
+     switch ((int)(sizeof(z_off_t))) {
+-    case 2:     break;
+-    case 4:     flags += 1 << 6;        break;
+-    case 8:     flags += 2 << 6;        break;
++    case 2:     break;				/* CONSTANT CONDITION */
++    case 4:     flags += 1 << 6;        break;	/* CONSTANT CONDITION */
++    case 8:     flags += 2 << 6;        break;	/* CONSTANT CONDITION */
+     default:    flags += 3 << 6;
+     }
+ #ifdef DEBUG
