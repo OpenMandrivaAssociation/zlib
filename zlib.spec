@@ -22,7 +22,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	15
+Release:	16
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -144,10 +144,10 @@ that use the zlib compression and decompression library.
 
 %build
 #(peroyvind):	be sure to remove -m64/-m32 flags as they're not overridable
-RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS| sed -e 's/-m.. //g'` -O3"
+RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS | sed -e 's/-m.. //g'` -O3"
 mkdir objs
 pushd objs
-  CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" CC="%{__cc}" \
+  CFLAGS="$RPM_OPT_FLAGS -Ofast" LDFLAGS="%{?ldflags}" CC="%{__cc}" \
 %if %{build_biarch}
   CC="%{__cc} -m64" \
 %endif
