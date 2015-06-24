@@ -3,6 +3,7 @@
 %define libname %mklibname %{shortname} %{major}
 %define biarchname lib%{shortname}%{major}
 %define devname %mklibname %{shortname} -d
+%define uc-devname %mklibname uclibc-%{shortname} -d
 %define libminizip %mklibname minizip %{major}
 %define devminizip %mklibname minizip -d
 
@@ -22,7 +23,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	16
+Release:	17
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -114,6 +115,17 @@ Conflicts:	zlib1 < 1.2.6-4
 %description -n	uclibc-%{libname}
 This package contains a version of the zlib library that's built against the
 uClibc library.
+
+%package -n %{uc-devname}
+Summary:	Header files and libraries for developing apps which will use zlib
+Group:		Development/C
+Requires:	%{devname} = %{version}-%{release}
+Provides:	uclibc-%{name}-devel
+Conflicts:	%{devname} < 1.28-17
+
+%description -n	%{uc-devname}
+This package contains the header files and libraries needed to develop programs
+that use the zlib compression and decompression library.
 %endif
 
 %package -n %{devname}
@@ -122,13 +134,6 @@ Group:		Development/C
 Requires:	%{libname} = %{version}-%{release}
 %if %{build_biarch}
 Requires:	%{biarchname} = %{version}-%{release}
-%endif
-%if %{with uclibc}
-# <proyvind> if zlib-devel is the only package with dependencies on uClibc() 
-# that's responsible for pulling in those packages, you can probably ditch the
-#  dependency on the uClibc -devel package, other packages will automatically 
-#pull it in anyways..
-#Requires:	uclibc-%{libname} = %{version}
 %endif
 %rename		%{_lib}zlib-devel
 %rename		%{name}-devel
@@ -252,6 +257,10 @@ popd
 %if %{with uclibc}
 %files -n uclibc-%{libname}
 %{uclibc_root}%{_libdir}/libz.so.%{major}*
+
+%files -n %{uc-devname}
+%{uclibc_root}%{_libdir}/libz.so
+%{uclibc_root}%{_libdir}/libz.a
 %endif
 
 %files -n %{devname}
@@ -267,15 +276,9 @@ popd
 %{_prefix}/lib/*.so
 %{_prefix}/lib/pkgconfig/zlib.pc
 %endif
-%if %{with uclibc}
-%{uclibc_root}%{_libdir}/libz.so
-%endif
 %{_includedir}/*.h
 %if %{with dietlibc}
 %{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
-%endif
-%if %{with uclibc}
-%{uclibc_root}%{_libdir}/libz.a
 %endif
 %if %{with minizip}
 %exclude %{_libdir}/libminizip.so
