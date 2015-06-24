@@ -3,7 +3,6 @@
 %define libname %mklibname %{shortname} %{major}
 %define biarchname lib%{shortname}%{major}
 %define devname %mklibname %{shortname} -d
-%define uc-devname %mklibname uclibc-%{shortname} -d
 %define libminizip %mklibname minizip %{major}
 %define devminizip %mklibname minizip -d
 
@@ -28,6 +27,7 @@ Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
 Source0:	http://www.zlib.net/%{name}-%{version}.tar.gz
+Source1:	zlib.rpmlintrc
 Patch1:		zlib-1.2.6-multibuild.patch
 Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
 Patch3:		zlib-1.2.7-improve-longest_match-performance.patch
@@ -116,14 +116,13 @@ Conflicts:	zlib1 < 1.2.6-4
 This package contains a version of the zlib library that's built against the
 uClibc library.
 
-%package -n %{uc-devname}
+%package -n uclibc-%{devname}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
 Requires:	%{devname} = %{version}-%{release}
-Provides:	uclibc-%{name}-devel
 Conflicts:	%{devname} < 1.28-17
 
-%description -n	%{uc-devname}
+%description -n	uclibc-%{devname}
 This package contains the header files and libraries needed to develop programs
 that use the zlib compression and decompression library.
 %endif
@@ -258,7 +257,7 @@ popd
 %files -n uclibc-%{libname}
 %{uclibc_root}%{_libdir}/libz.so.%{major}*
 
-%files -n %{uc-devname}
+%files -n uclibc-%{devname}
 %{uclibc_root}%{_libdir}/libz.so
 %{uclibc_root}%{_libdir}/libz.a
 %endif
