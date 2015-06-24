@@ -22,7 +22,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	17
+Release:	18
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -119,7 +119,8 @@ uClibc library.
 %package -n uclibc-%{devname}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
-Requires:	%{devname} = %{version}-%{release}
+Requires:	uclibc-%{libname} = %{EVRD}
+Requires:	%{devname} = %{EVRD}
 Conflicts:	%{devname} < 1.28-17
 
 %description -n	uclibc-%{devname}
