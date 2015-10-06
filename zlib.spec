@@ -5,6 +5,7 @@
 %define devname %mklibname %{shortname} -d
 %define libminizip %mklibname minizip %{major}
 %define devminizip %mklibname minizip -d
+%define _disable_lto 1
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
@@ -22,7 +23,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	22
+Release:	23
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
