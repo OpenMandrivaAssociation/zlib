@@ -13,17 +13,16 @@
 %define build_biarch 1
 %endif
 %ifarch sparcv9
-%define _lib	lib64
+%define _lib lib64
 %endif
 
-%bcond_with uclibc
 %bcond_without dietlibc
 %bcond_without minizip
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	25
+Release:	26
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -43,9 +42,6 @@ Patch7:		zlib-1.2.7-z-block-flush.patch
 Patch8:		zlib-1.2.8-minizip-include.patch
 Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
 BuildRequires:	setarch
-%if %{with uclibc}
-BuildRequires:	uClibc-devel >= 0.9.33.2-15
-%endif
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
 %endif
@@ -107,29 +103,6 @@ Conflicts:	zlib1 < 1.2.6-3
 This package contains the zlib biarch library.
 %endif
 
-%if %{with uclibc}
-%package -n uclibc-%{libname}
-Summary:	The zlib compression and decompression library linked against uClibc
-Group:		System/Libraries
-Conflicts:	zlib1 < 1.2.6-4
-
-%description -n	uclibc-%{libname}
-This package contains a version of the zlib library that's built against the
-uClibc library.
-
-%package -n uclibc-%{devname}
-Summary:	Header files and libraries for developing apps which will use zlib
-Group:		Development/C
-Provides:	uclibc-%{name}-devel = %{EVRD}
-Requires:	uclibc-%{libname} = %{EVRD}
-Requires:	%{devname} = %{EVRD}
-Conflicts:	%{devname} < 1.2.8-19
-
-%description -n	uclibc-%{devname}
-This package contains the header files and libraries needed to develop programs
-that use the zlib compression and decompression library.
-%endif
-
 %package -n %{devname}
 Summary:	Header files and libraries for developing apps which will use zlib
 Group:		Development/C
@@ -150,6 +123,7 @@ that use the zlib compression and decompression library.
 %apply_patches
 
 %build
+%serverbuild_hardened
 #(peroyvind):	be sure to remove -m64/-m32 flags as they're not overridable
 RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS | sed -e 's/-m.. //g'` -O3"
 mkdir objs
@@ -195,15 +169,6 @@ pushd objsdietlibc
 popd
 %endif
 
-%if %{with uclibc}
-mkdir objsuclibc
-pushd objsuclibc
-  CFLAGS="%{uclibc_cflags}" LDFLAGS="%{?ldflags}" CC="%{uclibc_cc}" \
-  ../configure --shared --prefix=%{_prefix}
-  %make
-popd
-%endif
-
 %if %{with minizip}
 pushd contrib/minizip
 autoreconf --install
@@ -235,17 +200,11 @@ ln -srf %{buildroot}/lib/libz.so.%{major}.* %{buildroot}%{_prefix}/lib/libz.so
 install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
 %endif
 
-%if %{with uclibc}
-#install -m644 objsuclibc/libz.a -D %{buildroot}%{uclibc_root}%{_libdir}/libz.a
-make install-libs-only -C objsuclibc prefix=%{buildroot}%{uclibc_root} libdir=%{buildroot}%{uclibc_root}%{_libdir}
-%endif
-
 %if %{with minizip}
 pushd contrib/minizip
 %makeinstall_std
 popd
 %endif
-
 
 %files -n %{libname}
 %doc README
@@ -254,15 +213,6 @@ popd
 %if %{build_biarch}
 %files -n %{biarchname}
 /lib/libz.so.*
-%endif
-
-%if %{with uclibc}
-%files -n uclibc-%{libname}
-%{uclibc_root}%{_libdir}/libz.so.%{major}*
-
-%files -n uclibc-%{devname}
-%{uclibc_root}%{_libdir}/libz.so
-%{uclibc_root}%{_libdir}/libz.a
 %endif
 
 %files -n %{devname}
