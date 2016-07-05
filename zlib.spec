@@ -9,20 +9,23 @@
 
 %define build_biarch 0
 # Enable bi-arch build on ppc64, sparc64 and x86-64
-%ifarch sparcv9 sparc64 x86_64 ppc64
+# disabled since 5 July 2016
+# biarch seems to be a stuff from mandrake time
+# don't know any reason to keep it alive
+%ifarch sparcv9 sparc64 ppc64
 %define build_biarch 1
 %endif
 %ifarch sparcv9
 %define _lib lib64
 %endif
-
-%bcond_without dietlibc
+# why we need dietlibc? Disabled too.
+%bcond_with dietlibc
 %bcond_without minizip
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.8
-Release:	26
+Release:	27
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
