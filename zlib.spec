@@ -31,20 +31,20 @@ License:	BSD
 Url:		http://www.gzip.org/zlib/
 Source0:	http://www.zlib.net/%{name}-%{version}.tar.gz
 Source1:	zlib.rpmlintrc
+%if %{build_biarch}
 Patch1:		zlib-1.2.6-multibuild.patch
+%endif
 Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
-Patch3:		zlib-1.2.7-improve-longest_match-performance.patch
-Patch4:		zlib-format.patch
-# This speeds up "minigzip -d linux-3.14.tar.gz" by around 10%
-Patch5:		zlib-1.2.8-memcpy.patch
 Patch6:		zlib-1.2.5-minizip-fixuncrypt.patch
 # resolves: RH#844791
 Patch7:		zlib-1.2.7-z-block-flush.patch
 # resolves: #985344
 # http://mail.madler.net/pipermail/zlib-devel_madler.net/2013-August/003081.html
 Patch8:		zlib-1.2.8-minizip-include.patch
-Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
-BuildRequires:	setarch
+# (tpg) does this is still needed ?
+#Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
+BuildRequires:	util-linux
+BuildRequires:	kernel-release-headers
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
 %endif
@@ -124,6 +124,7 @@ that use the zlib compression and decompression library.
 %prep
 %setup -q
 %apply_patches
+exit 1
 
 %build
 %serverbuild_hardened
@@ -136,7 +137,7 @@ pushd objs
   CC="%{__cc} -m64" \
 %endif
   ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
-  export LDFLAGS="$LDFLAGS -Wl,-z,relro"
+  export LDFLAGS="$LDFLAGS -Wl,-z,relro -Wl,-z,now"
   sed -i 's|CC=gcc|CC=%{__cc}|g' Makefile
   sed -i 's|LDSHARED=gcc|LDSHARED=%{__cc}|g' Makefile
   %make
@@ -148,7 +149,7 @@ popd
 %ifarch %{sparcx}
 RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
 %else
-RPM_OPT_FLAGS_32=`linux32 rpm --eval %%optflags|sed -e 's#i586#pentium4#g'`
+RPM_OPT_FLAGS_32=`linux32 rpm --eval %%{optflags}|sed -e 's#i586#pentium4#g'`
 %endif
 mkdir objs32
 pushd objs32
@@ -219,7 +220,7 @@ popd
 %endif
 
 %files -n %{devname}
-%doc README ChangeLog doc/algorithm.txt
+%doc README doc/algorithm.txt
 %{_mandir}/man3/zlib.3*
 %{_libdir}/*.a
 %{_libdir}/*.so
