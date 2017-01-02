@@ -124,7 +124,6 @@ that use the zlib compression and decompression library.
 %prep
 %setup -q
 %apply_patches
-exit 1
 
 %build
 %serverbuild_hardened
