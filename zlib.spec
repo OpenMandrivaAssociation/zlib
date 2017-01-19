@@ -24,12 +24,12 @@
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
-Version:	1.2.10
+Version:	1.2.11
 Release:	1
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
-Source0:	http://www.zlib.net/%{name}-%{version}.tar.gz
+Source0:	http://www.zlib.net/%{name}-%{version}.tar.xz
 Source1:	zlib.rpmlintrc
 %if %{build_biarch}
 Patch1:		zlib-1.2.6-multibuild.patch
