@@ -1,5 +1,2 @@
----
-removed_sources:
-  zlib-1.2.7.tar.gz: 4aa358a95d1e5774603e6fa149c926a80df43559
 sources:
-  zlib-1.2.8.tar.gz: a4d316c404ff54ca545ea71a27af7dbc29817088
+  zlib-1.2.11.tar.xz: e1cb0d5c92da8e9a8c2635dfa249c341dfd00322
