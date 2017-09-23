@@ -25,7 +25,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.11
-Release:	1
+Release:	2
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -43,6 +43,7 @@ Patch7:		zlib-1.2.7-z-block-flush.patch
 Patch8:		zlib-1.2.8-minizip-include.patch
 # (tpg) does this is still needed ?
 #Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
+Patch10:	zlib-1.2.11-fix-deflateParams-usage.patch
 BuildRequires:	util-linux
 BuildRequires:	kernel-release-headers
 %if %{with dietlibc}
