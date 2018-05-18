@@ -25,7 +25,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.11
-Release:	2
+Release:	3
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -205,9 +205,13 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 %endif
 
 %if %{with minizip}
-pushd contrib/minizip
+cd contrib/minizip
 %makeinstall_std
-popd
+cd -
+rm -fr %{buildroot}%{_libdir}/libminizip.la
+# https://bugzilla.redhat.com/show_bug.cgi?id=1424609
+# https://github.com/madler/zlib/pull/229
+rm -fr %{buildroot}%{_includedir}/minizip/crypt.h
 %endif
 
 %files -n %{libname}
