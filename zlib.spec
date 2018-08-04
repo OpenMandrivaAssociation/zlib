@@ -45,8 +45,7 @@ Patch8:		zlib-1.2.8-minizip-include.patch
 #Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
 Patch10:	zlib-1.2.11-fix-deflateParams-usage.patch
 BuildRequires:	util-linux
-BuildRequires:	kernel-release-headers
-BuildConflicts:	kernel-rc-headers
+BuildRequires:	kernel-headers
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
 %endif
