@@ -25,7 +25,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.11
-Release:	3
+Release:	4
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -46,6 +46,7 @@ Patch8:		zlib-1.2.8-minizip-include.patch
 Patch10:	zlib-1.2.11-fix-deflateParams-usage.patch
 BuildRequires:	util-linux
 BuildRequires:	kernel-release-headers
+BuildConflicts:	kernel-rc-headers
 %if %{with dietlibc}
 BuildRequires:	dietlibc-devel
 %endif
@@ -129,7 +130,7 @@ that use the zlib compression and decompression library.
 %build
 %serverbuild_hardened
 #(peroyvind):	be sure to remove -m64/-m32 flags as they're not overridable
-RPM_OPT_FLAGS="`echo $RPM_OPT_FLAGS | sed -e 's/-m.. //g'` -O3"
+RPM_OPT_FLAGS="$(echo $RPM_OPT_FLAGS | sed -e 's/-m.. //g') -O3"
 mkdir objs
 pushd objs
   CFLAGS="$RPM_OPT_FLAGS -Ofast" LDFLAGS="%{?ldflags}" CC="%{__cc}" \
@@ -149,7 +150,7 @@ popd
 %ifarch %{sparcx}
 RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
 %else
-RPM_OPT_FLAGS_32=`linux32 rpm --eval %%{optflags}|sed -e 's#i586#pentium4#g'`
+RPM_OPT_FLAGS_32="$(linux32 rpm --eval %%{optflags}|sed -e 's#i586#pentium4#g')"
 %endif
 mkdir objs32
 pushd objs32
