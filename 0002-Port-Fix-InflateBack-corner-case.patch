@@ -1,0 +1,147 @@
+From 267e6f20170edb9a00b11fc3a2ca7649ea1c4464 Mon Sep 17 00:00:00 2001
+From: Adenilson Cavalcanti <adenilson.cavalcanti@arm.com>
+Date: Wed, 4 Apr 2018 15:14:57 -0700
+Subject: [PATCH 2/2] Port Fix InflateBack corner case
+
+This handles the case where a zlib user could rely on InflateBack
+API to decompress content.
+
+The NEON optimization assumes that it can perform wide stores, sometimes
+overwriting data on the output pointer (but never overflowing the buffer
+end as it has enough room for the write).
+
+For infback there is no such guarantees (i.e. no extra wiggle room),
+which can result in illegal operations. This patch fixes the potential
+issue by falling back to the non-optimized code for such cases.
+
+Also it adds some comments about the entry assumptions in inflate and
+writes out a defined value at the write buffer to identify where
+the real data has ended (helpful while debugging).
+
+For reference, please see:
+https://chromium.googlesource.com/chromium/src/+/0bb11040792edc5b28fcb710fc4c01fedd98c97c
+
+Change-Id: Iffbda9eb5e08a661aa15c6e3d1c59b678cc23b2c
+---
+ CMakeLists.txt                             |  5 ++---
+ contrib/arm/{inffast.c => inffast_chunk.c} | 10 +++++++---
+ contrib/arm/inffast_chunk.h                | 12 ++++++++++++
+ contrib/arm/inflate.c                      | 14 ++++++++++++--
+ 4 files changed, 33 insertions(+), 8 deletions(-)
+ rename contrib/arm/{inffast.c => inffast_chunk.c} (97%)
+ create mode 100644 contrib/arm/inffast_chunk.h
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 09bb3db..98ee4dd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -139,9 +139,8 @@ if(CMAKE_COMPILER_IS_GNUCC)
+ 
+     if(ARM_NEON)
+         list(REMOVE_ITEM ZLIB_SRCS inflate.c)
+-        list(REMOVE_ITEM ZLIB_SRCS inffast.c)
+-        set(ZLIB_ARM_NEON_HDRS contrib/arm/chunkcopy.h)
+-        set(ZLIB_ARM_NEON contrib/arm/inflate.c contrib/arm/inffast.c)
++        set(ZLIB_ARM_NEON_HDRS contrib/arm/chunkcopy.h contrib/arm/inffast_chunk.h)
++        set(ZLIB_ARM_NEON contrib/arm/inflate.c contrib/arm/inffast_chunk.c)
+         add_definitions(-DARM_NEON)
+         set(COMPILER ${CMAKE_C_COMPILER})
+         # NEON is mandatory in ARMv8.
+diff --git a/contrib/arm/inffast.c b/contrib/arm/inffast_chunk.c
+similarity index 97%
+rename from contrib/arm/inffast.c
+rename to contrib/arm/inffast_chunk.c
+index f7f5007..0c5c583 100644
+--- a/contrib/arm/inffast.c
++++ b/contrib/arm/inffast_chunk.c
+@@ -6,8 +6,8 @@
+ #include "zutil.h"
+ #include "inftrees.h"
+ #include "inflate.h"
+-#include "inffast.h"
+-#include "chunkcopy.h"
++#include "contrib/arm/inffast_chunk.h"
++#include "contrib/arm/chunkcopy.h"
+ 
+ #ifdef ASMINF
+ #  pragma message("Assembler code may have bugs -- use at your own risk")
+@@ -28,6 +28,10 @@
+         strm->avail_out >= 258
+         start >= strm->avail_out
+         state->bits < 8
++        strm->next_out[0..strm->avail_out] does not overlap with
++              strm->next_in[0..strm->avail_in]
++        strm->state->window is allocated with an additional
++              CHUNKCOPY_CHUNK_SIZE-1 bytes of padding beyond strm->state->wsize
+ 
+    On return, state->mode is one of:
+ 
+@@ -48,7 +52,7 @@
+       requires strm->avail_out >= 258 for each loop to avoid checking for
+       output space.
+  */
+-void ZLIB_INTERNAL inflate_fast(strm, start)
++void ZLIB_INTERNAL inflate_fast_chunk(strm, start)
+ z_streamp strm;
+ unsigned start;         /* inflate()'s starting value for strm->avail_out */
+ {
+diff --git a/contrib/arm/inffast_chunk.h b/contrib/arm/inffast_chunk.h
+new file mode 100644
+index 0000000..7839e1d
+--- /dev/null
++++ b/contrib/arm/inffast_chunk.h
+@@ -0,0 +1,12 @@
++/* inffast.h -- header to use inffast.c
++ * Copyright (C) 1995-2003, 2010 Mark Adler
++ * Copyright (C) 2017 ARM, Inc.
++ * For conditions of distribution and use, see copyright notice in zlib.h
++ */
++
++/* WARNING: this file should *not* be used by applications. It is
++   part of the implementation of the compression library and is
++   subject to change. Applications should only use zlib.h.
++ */
++
++void ZLIB_INTERNAL inflate_fast_chunk OF((z_streamp strm, unsigned start));
+diff --git a/contrib/arm/inflate.c b/contrib/arm/inflate.c
+index 23e95f1..d860542 100644
+--- a/contrib/arm/inflate.c
++++ b/contrib/arm/inflate.c
+@@ -83,7 +83,7 @@
+ #include "zutil.h"
+ #include "inftrees.h"
+ #include "inflate.h"
+-#include "inffast.h"
++#include "contrib/arm/inffast_chunk.h"
+ #include "contrib/arm/chunkcopy.h"
+ 
+ #ifdef MAKEFIXED
+@@ -1056,7 +1056,7 @@ int flush;
+         case LEN:
+             if (have >= 6 && left >= 258) {
+                 RESTORE();
+-                inflate_fast(strm, out);
++                inflate_fast_chunk(strm, out);
+                 LOAD();
+                 if (state->mode == TYPE)
+                     state->back = -1;
+@@ -1262,6 +1262,16 @@ int flush;
+        Note: a memory error from inflate() is non-recoverable.
+      */
+   inf_leave:
++   /* We write a defined value in the unused space to help mark
++    * where the stream has ended. We don't use zeros as that can
++    * mislead clients relying on undefined behavior (i.e. assuming
++    * that the data is over when the buffer has a zero/null value).
++    */
++   if (left >= CHUNKCOPY_CHUNK_SIZE)
++      memset(put, 0x55, CHUNKCOPY_CHUNK_SIZE);
++   else
++      memset(put, 0x55, left);
++
+     RESTORE();
+     if (state->wsize || (out != strm->avail_out && state->mode < BAD &&
+             (state->mode < CHECK || flush != Z_FINISH)))
+-- 
+2.14.3
+

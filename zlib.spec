@@ -25,7 +25,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.11
-Release:	4
+Release:	5
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -35,6 +35,7 @@ Source1:	zlib.rpmlintrc
 Patch1:		zlib-1.2.6-multibuild.patch
 %endif
 Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
+# https://github.com/madler/zlib/pull/210
 Patch6:		zlib-1.2.5-minizip-fixuncrypt.patch
 # resolves: RH#844791
 Patch7:		zlib-1.2.7-z-block-flush.patch
@@ -43,7 +44,18 @@ Patch7:		zlib-1.2.7-z-block-flush.patch
 Patch8:		zlib-1.2.8-minizip-include.patch
 # (tpg) does this is still needed ?
 #Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
+# From https://github.com/madler/zlib/commit/f9694097dd69354b03cb8af959094c7f260db0a1.patch
 Patch10:	zlib-1.2.11-fix-deflateParams-usage.patch
+
+%ifarch aarch64
+# general aarch64 optimizations
+Patch20:	0001-Porting-inflate-using-wider-loads-and-stores.patch
+Patch21:	0002-Port-Fix-InflateBack-corner-case.patch
+Patch22:	0001-Neon-Optimized-hash-chain-rebase.patch
+Patch23:	0002-Porting-optimized-longest_match.patch
+Patch24:	0003-arm64-specific-build-patch.patch
+%endif
+
 BuildRequires:	util-linux
 BuildRequires:	kernel-headers
 %if %{with dietlibc}
@@ -123,13 +135,17 @@ This package contains the header files and libraries needed to develop programs
 that use the zlib compression and decompression library.
 
 %prep
-%setup -q
-%apply_patches
+%autosetup -p1
 
 %build
 %serverbuild_hardened
 #(peroyvind):	be sure to remove -m64/-m32 flags as they're not overridable
 RPM_OPT_FLAGS="$(echo $RPM_OPT_FLAGS | sed -e 's/-m.. //g') -O3"
+
+%ifarch aarch64
+RPM_OPT_FLAGS+="$RPM_OPT_FLAGS -DARM_NEON"
+%endif
+
 mkdir objs
 pushd objs
   CFLAGS="$RPM_OPT_FLAGS -Ofast" LDFLAGS="%{?ldflags}" CC="%{__cc}" \
@@ -140,7 +156,7 @@ pushd objs
   export LDFLAGS="$LDFLAGS -Wl,-z,relro -Wl,-z,now"
   sed -i 's|CC=gcc|CC=%{__cc}|g' Makefile
   sed -i 's|LDSHARED=gcc|LDSHARED=%{__cc}|g' Makefile
-  %make
+  %make_build
   make test
   ln -s ../zlib.3 .
 popd
@@ -158,7 +174,7 @@ pushd objs32
   # Force gcc for 32bit builds for now.
   CFLAGS="$RPM_OPT_FLAGS_32" LDFLAGS="%{?ldflags}" CC="gcc -m32" \
   ../configure --shared --prefix=%{_prefix}
-  %make
+  %make_build
   make test
   ln -s ../zlib.3 .
 popd
@@ -169,7 +185,7 @@ mkdir objsdietlibc
 pushd objsdietlibc
   CFLAGS="-Os" CC="diet gcc" \
   ../configure --prefix=%{_prefix}
-  %make libz.a
+  %make_build libz.a
 popd
 %endif
 
@@ -177,7 +193,7 @@ popd
 pushd contrib/minizip
 autoreconf --install
 %configure --enable-static=no
-%make
+%make_build
 popd
 %endif
 
@@ -206,8 +222,9 @@ install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_
 
 %if %{with minizip}
 cd contrib/minizip
-%makeinstall_std
+%make_install
 cd -
+
 rm -fr %{buildroot}%{_libdir}/libminizip.la
 # https://bugzilla.redhat.com/show_bug.cgi?id=1424609
 # https://github.com/madler/zlib/pull/229

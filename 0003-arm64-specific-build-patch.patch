@@ -1,0 +1,136 @@
+From bd30e5ff76aab2668ebfd46e5dbadc44322960c1 Mon Sep 17 00:00:00 2001
+From: Jeremy Linton <jeremy.linton@arm.com>
+Date: Fri, 6 Apr 2018 11:46:42 -0500
+Subject: [PATCH 3/3] arm64 specific build patch
+
+---
+ Makefile.in           | 37 +++++++++++++++++++++++++++----------
+ configure             |  2 +-
+ contrib/minizip/zip.c |  6 ++++--
+ 3 files changed, 32 insertions(+), 13 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 5a77949..1a1e452 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -57,11 +57,11 @@ SRCDIR=
+ ZINC=
+ ZINCOUT=-I.
+ 
+-OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
++OBJZ = adler32.o crc32.o deflate.o infback.o arminffast.o inffast.o inflate.o inflate_chunk.o inftrees.o trees.o zutil.o
+ OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
+ OBJC = $(OBJZ) $(OBJG)
+ 
+-PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
++PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inflate_chunk.lo inftrees.lo trees.lo zutil.lo
+ PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
+ PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
+ 
+@@ -163,16 +163,22 @@ crc32.o: $(SRCDIR)crc32.c
+ 	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)crc32.c
+ 
+ deflate.o: $(SRCDIR)deflate.c
+-	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)deflate.c
++	$(CC) $(CFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -c -o $@ $(SRCDIR)deflate.c
+ 
+ infback.o: $(SRCDIR)infback.c
+ 	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)infback.c
+ 
+ inffast.o: $(SRCDIR)inffast.c
+-	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)inffast.c
++	$(CC) $(CFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -c -o $@ $(SRCDIR)inffast.c
+ 
+-inflate.o: $(SRCDIR)inflate.c
+-	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)inflate.c
++arminffast.o: $(SRCDIR)contrib/arm/inffast_chunk.c
++	$(CC) $(CFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -c -o $@ $(SRCDIR)contrib/arm/inffast_chunk.c
++
++inflate.o: $(SRCDIR)contrib/arm/inflate.c
++	$(CC) $(CFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -c -o $@ $(SRCDIR)contrib/arm/inflate.c
++
++inflate_chunk.o: $(SRCDIR)contrib/arm/inffast_chunk.c
++	$(CC) $(CFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -c -o $@ $(SRCDIR)contrib/arm/inffast_chunk.c
+ 
+ inftrees.o: $(SRCDIR)inftrees.c
+ 	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)inftrees.c
+@@ -214,7 +220,7 @@ crc32.lo: $(SRCDIR)crc32.c
+ 
+ deflate.lo: $(SRCDIR)deflate.c
+ 	-@mkdir objs 2>/dev/null || test -d objs
+-	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/deflate.o $(SRCDIR)deflate.c
++	$(CC) $(SFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -DPIC -c -o objs/deflate.o $(SRCDIR)deflate.c
+ 	-@mv objs/deflate.o $@
+ 
+ infback.lo: $(SRCDIR)infback.c
+@@ -222,16 +228,27 @@ infback.lo: $(SRCDIR)infback.c
+ 	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/infback.o $(SRCDIR)infback.c
+ 	-@mv objs/infback.o $@
+ 
++arminffast.lo: $(SRCDIR)contrib/arm/inffast_chunk.c $(SRCDIR)inffast.c
++	-@mkdir objs 2>/dev/null || test -d objs
++	$(CC) $(SFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -DPIC -c -o objs/arminffast.o $(SRCDIR)contrib/arm/inffast_chunk.c
++	-@mv objs/arminffast.o $@
++
+ inffast.lo: $(SRCDIR)inffast.c
+ 	-@mkdir objs 2>/dev/null || test -d objs
+-	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/inffast.o $(SRCDIR)inffast.c
++	$(CC) $(SFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -DPIC -c -o objs/inffast.o $(SRCDIR)inffast.c
+ 	-@mv objs/inffast.o $@
+ 
+-inflate.lo: $(SRCDIR)inflate.c
++inflate.lo: $(SRCDIR)contrib/arm/inflate.c
+ 	-@mkdir objs 2>/dev/null || test -d objs
+-	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/inflate.o $(SRCDIR)inflate.c
++	$(CC) $(SFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -DPIC -c -o objs/inflate.o $(SRCDIR)contrib/arm/inflate.c
+ 	-@mv objs/inflate.o $@
+ 
++inflate_chunk.lo: $(SRCDIR)contrib/arm/inffast_chunk.c
++	-@mkdir objs 2>/dev/null || test -d objs
++	$(CC) $(SFLAGS) $(ZINC) -I$(SRCDIR) -I$(SRCDIR)contrib/arm -DPIC -c -o objs/inflate_chunk.o $(SRCDIR)contrib/arm/inffast_chunk.c
++	-@mv objs/inflate_chunk.o $@
++
++
+ inftrees.lo: $(SRCDIR)inftrees.c
+ 	-@mkdir objs 2>/dev/null || test -d objs
+ 	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/inftrees.o $(SRCDIR)inftrees.c
+diff --git a/configure b/configure
+index e974d1f..0c5f837 100755
+--- a/configure
++++ b/configure
+@@ -23,7 +23,7 @@ SRCDIR=`dirname $0`
+ if test $SRCDIR = "."; then
+     ZINC=""
+     ZINCOUT="-I."
+-    SRCDIR=""
++    SRCDIR="./"
+ else
+     ZINC='-include zconf.h'
+     ZINCOUT='-I. -I$(SRCDIR)'
+diff --git a/contrib/minizip/zip.c b/contrib/minizip/zip.c
+index 44e88a9..0517930 100644
+--- a/contrib/minizip/zip.c
++++ b/contrib/minizip/zip.c
+@@ -519,15 +519,17 @@ local ZPOS64_T zip64local_SearchCentralDir(const zlib_filefunc64_32_def* pzlib_f
+       break;
+ 
+     for (i=(int)uReadSize-3; (i--)>0;)
++    {
+       if (((*(buf+i))==0x50) && ((*(buf+i+1))==0x4b) &&
+         ((*(buf+i+2))==0x05) && ((*(buf+i+3))==0x06))
+       {
+         uPosFound = uReadPos+i;
+         break;
+       }
++    }
+ 
+-      if (uPosFound!=0)
+-        break;
++    if (uPosFound!=0)
++      break;
+   }
+   TRYFREE(buf);
+   return uPosFound;
+-- 
+2.14.3
+
