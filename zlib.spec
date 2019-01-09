@@ -25,7 +25,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.11
-Release:	6
+Release:	7
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -148,7 +148,7 @@ RPM_OPT_FLAGS+="$RPM_OPT_FLAGS -DARM_NEON"
 
 mkdir objs
 pushd objs
-  CFLAGS="$RPM_OPT_FLAGS -Ofast" LDFLAGS="%{?ldflags}" CC="%{__cc}" \
+  CFLAGS="$RPM_OPT_FLAGS -O3" LDFLAGS="%{?ldflags}" CC="%{__cc}" \
 %if %{build_biarch}
   CC="%{__cc} -m64" \
 %endif
