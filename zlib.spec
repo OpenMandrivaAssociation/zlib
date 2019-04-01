@@ -163,8 +163,6 @@ cat *.c | ./minigzip -6 | ./minigzip -d > /dev/null
 cat *.c | ./minigzip -4 | ./minigzip -d > /dev/null
 cat *.c | ./minigzip -9 | ./minigzip -d > /dev/null
 llvm-profdata merge --output=%{name}.profile *.profile.d
-unset LLVM_PROFILE_FILE
-unset LD_LIBRARY_PATH
 rm -f *.profile.d
 make clean
 %endif
@@ -224,7 +222,7 @@ autoreconf --install
     CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
     CC="%{__cc}" \
 %endif
-LD_LIBRARY_PATH="$(realpath ../../objs)" LDFLAGS="${LDFLAGS} -L$(realpath ../../objs)" %configure --enable-static=no || cat config.log
+LD_LIBRARY_PATH="$(realpath ../../objs)" LDFLAGS="${LDFLAGS} -L$(realpath ../../objs)" %configure --enable-static=no
 %make_build
 cd -
 %endif
