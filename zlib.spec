@@ -224,7 +224,7 @@ autoreconf --install
     CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
     CC="%{__cc}" \
 %endif
-LD_LIBRARY_PATH="$(realpath ../../objs)" LDFLAGS="${LDFLAGS} -L$(realpath ../../objs)" %configure --enable-static=no
+LD_LIBRARY_PATH="$(realpath ../../objs)" LDFLAGS="${LDFLAGS} -L$(realpath ../../objs)" %configure --enable-static=no || cat config.log
 %make_build
 cd -
 %endif
