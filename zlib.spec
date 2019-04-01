@@ -29,7 +29,7 @@
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.11
-Release:	8
+Release:	9
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -99,7 +99,7 @@ Group:		System/Libraries
 %rename		%{name}1
 %rename		%{_lib}z1_
 
-%description -n	%{libname}
+%description -n %{libname}
 The zlib compression library provides in-memory compression and
 decompression functions, including integrity checks of the uncompressed
 data.  This version of the library supports only one compression method
@@ -128,7 +128,7 @@ Requires:	%{biarchname} = %{version}-%{release}
 %rename		%{name}-devel
 %rename		%{name}1-devel
 
-%description -n	%{devname}
+%description -n %{devname}
 This package contains the header files and libraries needed to develop programs
 that use the zlib compression and decompression library.
 
@@ -146,8 +146,8 @@ RPM_OPT_FLAGS+="$RPM_OPT_FLAGS -DARM_NEON"
 %endif
 
 %if %{with pgo}
-CFLAGS_PGO="$RPM_OPT_FLAGS -fprofile-instr-generate" \
-CXXFLAGS_PGO="$RPM_OPT_FLAGS -fprofile-instr-generate" \
+CFLAGS_PGO="$RPM_OPT_FLAGS -fprofile-instr-generate"
+CXXFLAGS_PGO="$RPM_OPT_FLAGS -fprofile-instr-generate"
 FFLAGS_PGO="$CFLAGS_PGO"
 FCFLAGS_PGO="$CFLAGS_PGO"
 LDFLAGS_PGO="%{ldflags} -fprofile-instr-generate"
@@ -174,7 +174,7 @@ cd objs
 %if %{with pgo}
     CFLAGS="$RPM_OPT_FLAGS -fprofile-instr-use=$(realpath ../%{name}.profile)" \
     CXXFLAGS="%{optflags} -fprofile-instr-use=$(realpath ../%{name}.profile)" \
-    LDFLAGS="%{ldflags} -fprofile-instr-use=$(realpath ../%{name}.profile)" \
+    LDFLAGS="%{ldflags} -fprofile-use" \
     CC="%{__cc}" \
 %else
     CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
@@ -218,7 +218,7 @@ autoreconf --install
 %if %{with pgo}
     CFLAGS="$RPM_OPT_FLAGS -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
     CXXFLAGS="%{optflags} -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
-    LDFLAGS="%{ldflags} -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
+    LDFLAGS="%{ldflags} -fprofile-use" \
     CC="%{__cc}" \
 %else
     CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
