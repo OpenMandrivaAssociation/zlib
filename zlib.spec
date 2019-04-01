@@ -162,6 +162,8 @@ make V=1  %{?_smp_mflags}
 cat *.c | ./minigzip -6 | ./minigzip -d > /dev/null
 cat *.c | ./minigzip -4 | ./minigzip -d > /dev/null
 cat *.c | ./minigzip -9 | ./minigzip -d > /dev/null
+unset LD_LIBRARY_PATH
+unset LLVM_PROFILE_FILE
 llvm-profdata merge --output=%{name}.profile *.profile.d
 rm -f *.profile.d
 make clean
@@ -216,13 +218,13 @@ autoreconf --install
 %if %{with pgo}
     CFLAGS="$RPM_OPT_FLAGS -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
     CXXFLAGS="%{optflags} -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
-    LDFLAGS="%{ldflags} -fprofile-use" \
+    LDFLAGS="%{ldflags} -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
     CC="%{__cc}" \
 %else
     CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
     CC="%{__cc}" \
 %endif
-LD_LIBRARY_PATH="$(realpath ../../objs)" LDFLAGS="${LDFLAGS} -L$(realpath ../../objs)" %configure --enable-static=no
+LD_LIBRARY_PATH="$(realpath ../../objs)" LDFLAGS="${LDFLAGS} -L$(realpath ../../objs)" %configure --enable-static=no || cat config.log
 %make_build
 cd -
 %endif
