@@ -18,14 +18,14 @@
 %ifarch sparcv9
 %define _lib lib64
 %endif
-# why we need dietlibc? Disabled too.
-%bcond_with dietlibc
 %bcond_without minizip
+# (tpg) enable PGO build
+%bcond_without pgo
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
 Version:	1.2.11
-Release:	7
+Release:	8
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -58,12 +58,6 @@ Patch24:	0003-arm64-specific-build-patch.patch
 
 BuildRequires:	util-linux
 BuildRequires:	kernel-headers
-%if %{with dietlibc}
-BuildRequires:	dietlibc-devel
-%endif
-%if %{with minizip}
-BuildRequires:	pkgconfig(zlib)
-%endif
 
 %if %{with minizip}
 %package -n %{libminizip}
@@ -139,27 +133,60 @@ that use the zlib compression and decompression library.
 
 %build
 %serverbuild_hardened
-#(peroyvind):	be sure to remove -m64/-m32 flags as they're not overridable
+
+#(peroyvind): be sure to remove -m64/-m32 flags as they're not overridable
 RPM_OPT_FLAGS="$(echo $RPM_OPT_FLAGS | sed -e 's/-m.. //g') -O3"
 
 %ifarch aarch64
 RPM_OPT_FLAGS+="$RPM_OPT_FLAGS -DARM_NEON"
 %endif
 
-mkdir objs
-pushd objs
-  CFLAGS="$RPM_OPT_FLAGS -O3" LDFLAGS="%{?ldflags}" CC="%{__cc}" \
-%if %{build_biarch}
-  CC="%{__cc} -m64" \
+%if %{with pgo}
+CFLAGS_PGO="$RPM_OPT_FLAGS -fprofile-instr-generate" \
+CXXFLAGS_PGO="$RPM_OPT_FLAGS -fprofile-instr-generate" \
+FFLAGS_PGO="$CFLAGS_PGO"
+FCFLAGS_PGO="$CFLAGS_PGO"
+LDFLAGS_PGO="%{ldflags} -fprofile-instr-generate"
+export LLVM_PROFILE_FILE=%{name}-%p.profile.d
+export LD_LIBRARY_PATH="$(pwd)"
+CFLAGS="${CFLAGS_PGO}" CXXFLAGS="${CXXFLAGS_PGO}" FFLAGS="${FFLAGS_PGO}" FCFLAGS="${FCFLAGS_PGO}" LDFLAGS="${LDFLAGS_PGO}" CC="%{__cc}" ./configure --static --shared
+sed -i 's|CC=gcc|CC=%{__cc}|g' Makefile
+sed -i 's|LDSHARED=gcc|LDSHARED=%{__cc}|g' Makefile
+
+make V=1  %{?_smp_mflags}
+
+cat *.c | ./minigzip -6 | ./minigzip -d > /dev/null
+cat *.c | ./minigzip -4 | ./minigzip -d > /dev/null
+cat *.c | ./minigzip -9 | ./minigzip -d > /dev/null
+llvm-profdata merge --output=%{name}.profile *.profile.d
+unset LLVM_PROFILE_FILE
+unset LD_LIBRARY_PATH
+rm -f *.profile.d
+make clean
 %endif
-  ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
-  export LDFLAGS="$LDFLAGS -Wl,-z,relro -Wl,-z,now"
-  sed -i 's|CC=gcc|CC=%{__cc}|g' Makefile
-  sed -i 's|LDSHARED=gcc|LDSHARED=%{__cc}|g' Makefile
-  %make_build
-  make test
-  ln -s ../zlib.3 .
-popd
+
+mkdir objs
+cd objs
+%if %{with pgo}
+    CFLAGS="$RPM_OPT_FLAGS -fprofile-instr-use=$(realpath ../%{name}.profile)" \
+    CXXFLAGS="%{optflags} -fprofile-instr-use=$(realpath ../%{name}.profile)" \
+    LDFLAGS="%{ldflags} -fprofile-instr-use=$(realpath ../%{name}.profile)" \
+    CC="%{__cc}" \
+%else
+    CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
+    CC="%{__cc}" \
+%endif
+%if %{build_biarch}
+    CC="%{__cc} -m64" \
+%endif
+    ../configure --shared --prefix=%{_prefix} --libdir=%{_libdir}
+    export LDFLAGS="$LDFLAGS -Wl,-z,relro -Wl,-z,now"
+    sed -i 's|CC=gcc|CC=%{__cc}|g' Makefile
+    sed -i 's|LDSHARED=gcc|LDSHARED=%{__cc}|g' Makefile
+    %make_build
+    make test
+    ln -s ../zlib.3 .
+cd -
 
 %if %{build_biarch}
 %ifarch %{sparcx}
@@ -168,7 +195,7 @@ RPM_OPT_FLAGS_32="$RPM_OPT_FLAGS"
 RPM_OPT_FLAGS_32="$(linux32 rpm --eval %%{optflags}|sed -e 's#i586#pentium4#g')"
 %endif
 mkdir objs32
-pushd objs32
+cd objs32
   # FIXME as of 3.5-0.211571.1, clang -m32 is broken
   # (calls linker in 64bit mode).
   # Force gcc for 32bit builds for now.
@@ -177,24 +204,25 @@ pushd objs32
   %make_build
   make test
   ln -s ../zlib.3 .
-popd
-%endif
-
-%if %{with dietlibc}
-mkdir objsdietlibc
-pushd objsdietlibc
-  CFLAGS="-Os" CC="diet gcc" \
-  ../configure --prefix=%{_prefix}
-  %make_build libz.a
-popd
+cd -
 %endif
 
 %if %{with minizip}
-pushd contrib/minizip
+cd contrib/minizip
+make clean ||:
 autoreconf --install
-%configure --enable-static=no
+%if %{with pgo}
+    CFLAGS="$RPM_OPT_FLAGS -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
+    CXXFLAGS="%{optflags} -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
+    LDFLAGS="%{ldflags} -fprofile-instr-use=$(realpath ../../%{name}.profile)" \
+    CC="%{__cc}" \
+%else
+    CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
+    CC="%{__cc}" \
+%endif
+LD_LIBRARY_PATH="$(realpath ../../objs)" LDFLAGS="${LDFLAGS} -L$(realpath ../../objs)" %configure --enable-static=no
 %make_build
-popd
+cd -
 %endif
 
 %install
@@ -214,10 +242,6 @@ ln -srf %{buildroot}/%{_lib}/libz.so.%{major}.* %{buildroot}%{_libdir}/libz.so
 install -d %{buildroot}/lib
 mv %{buildroot}%{_prefix}/lib/libz.so.%{major}* %{buildroot}/lib/
 ln -srf %{buildroot}/lib/libz.so.%{major}.* %{buildroot}%{_prefix}/lib/libz.so
-%endif
-
-%if %{with dietlibc}
-install -m644 objsdietlibc/libz.a -D %{buildroot}%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
 %endif
 
 %if %{with minizip}
@@ -254,9 +278,6 @@ rm -fr %{buildroot}%{_includedir}/minizip/crypt.h
 %{_prefix}/lib/pkgconfig/zlib.pc
 %endif
 %{_includedir}/*.h
-%if %{with dietlibc}
-%{_prefix}/lib/dietlibc/lib-%{_arch}/libz.a
-%endif
 %if %{with minizip}
 %exclude %{_libdir}/libminizip.so
 %endif
