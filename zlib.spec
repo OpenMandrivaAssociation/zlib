@@ -20,7 +20,11 @@
 %endif
 %bcond_without minizip
 # (tpg) enable PGO build
+%ifnarch riscv64
 %bcond_without pgo
+%else
+%bcond_with pgo
+%endif
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
