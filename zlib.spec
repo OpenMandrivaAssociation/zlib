@@ -174,7 +174,7 @@ cd objs
 %if %{with pgo}
     CFLAGS="$RPM_OPT_FLAGS -fprofile-instr-use=$(realpath ../%{name}.profile)" \
     CXXFLAGS="%{optflags} -fprofile-instr-use=$(realpath ../%{name}.profile)" \
-    LDFLAGS="%{ldflags} -fprofile-use" \
+    LDFLAGS="%{ldflags} -fprofile-instr-use=$(realpath ../%{name}.profile)" \
     CC="%{__cc}" \
 %else
     CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?ldflags}" \
