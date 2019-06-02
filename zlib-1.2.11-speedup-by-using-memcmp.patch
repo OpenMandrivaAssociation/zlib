@@ -1,0 +1,134 @@
+diff -up zlib-1.2.11/inffast.c.omv~ zlib-1.2.11/inffast.c
+--- zlib-1.2.11/inffast.c.omv~	2019-06-02 15:48:58.339159735 +0200
++++ zlib-1.2.11/inffast.c	2019-06-02 16:10:06.619172624 +0200
+@@ -3,6 +3,7 @@
+  * For conditions of distribution and use, see copyright notice in zlib.h
+  */
+ 
++#include <stdio.h>
+ #include "zutil.h"
+ #include "inftrees.h"
+ #include "inflate.h"
+@@ -201,9 +202,13 @@ unsigned start;         /* inflate()'s s
+                         from += wsize - op;
+                         if (op < len) {         /* some from window */
+                             len -= op;
+-                            do {
+-                                *out++ = *from++;
+-                            } while (--op);
++                            if(labs(out-from)<op) {
++                                do {
++                                    *out++ = *from++;
++                                } while (--op);
++                            } else {
++                                memcpy(out, from, op); out += op;
++                            }
+                             from = out - dist;  /* rest from output */
+                         }
+                     }
+@@ -212,16 +217,26 @@ unsigned start;         /* inflate()'s s
+                         op -= wnext;
+                         if (op < len) {         /* some from end of window */
+                             len -= op;
+-                            do {
+-                                *out++ = *from++;
+-                            } while (--op);
++                            if(labs(out-from)<op) {
++                                do {
++                                    *out++ = *from++;
++                                } while (--op);
++                            } else {
++                                memcpy(out, from, op);
++                                out += op;
++                            }
+                             from = window;
+                             if (wnext < len) {  /* some from start of window */
+                                 op = wnext;
+                                 len -= op;
+-                                do {
+-                                    *out++ = *from++;
+-                                } while (--op);
++                                if(labs(out-from)<op) {
++                                    do {
++                                        *out++ = *from++;
++                                    } while (--op);
++                                } else {
++                                    memcpy(out, from, op);
++                                    out += op;
++                                }
+                                 from = out - dist;      /* rest from output */
+                             }
+                         }
+@@ -230,36 +245,51 @@ unsigned start;         /* inflate()'s s
+                         from += wnext - op;
+                         if (op < len) {         /* some from window */
+                             len -= op;
+-                            do {
+-                                *out++ = *from++;
+-                            } while (--op);
++                            if(labs(out-from)<op) {
++                                do {
++                                    *out++ = *from++;
++                                } while (--op);
++                            } else {
++                                memcpy(out, from, op);
++                                out += op;
++                            }
+                             from = out - dist;  /* rest from output */
+                         }
+                     }
+-                    while (len > 2) {
+-                        *out++ = *from++;
+-                        *out++ = *from++;
+-                        *out++ = *from++;
+-                        len -= 3;
+-                    }
+-                    if (len) {
+-                        *out++ = *from++;
+-                        if (len > 1)
++                    if(labs(out-from)<len) {
++                        while (len > 2) {
++                            *out++ = *from++;
++                            *out++ = *from++;
++                            *out++ = *from++;
++                            len -= 3;
++                        }
++                        if (len) {
+                             *out++ = *from++;
++                            if (len > 1)
++                                *out++ = *from++;
++                        }
++                    } else {
++                        memcpy(out, from, len);
++                        out += len; from += len;
+                     }
+                 }
+                 else {
+                     from = out - dist;          /* copy direct from output */
+-                    do {                        /* minimum length is three */
+-                        *out++ = *from++;
+-                        *out++ = *from++;
+-                        *out++ = *from++;
+-                        len -= 3;
+-                    } while (len > 2);
+-                    if (len) {
+-                        *out++ = *from++;
+-                        if (len > 1)
++                    if(labs(out-from)<len) {
++                        do {                        /* minimum length is three */
++                            *out++ = *from++;
+                             *out++ = *from++;
++                            *out++ = *from++;
++                            len -= 3;
++                        } while (len > 2);
++                        if (len) {
++                            *out++ = *from++;
++                            if (len > 1)
++                                *out++ = *from++;
++                        }
++                    } else {
++                        memcpy(out, from, len);
++                        out+=len; from+=len;
+                     }
+                 }
+             }
