@@ -19,8 +19,8 @@
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
-Version:	1.2.11
-Release:	14
+Version:	1.2.13
+Release:	1
 Group:		System/Libraries
 License:	BSD
 Url:		http://www.gzip.org/zlib/
@@ -36,8 +36,6 @@ Patch7:		zlib-1.2.7-z-block-flush.patch
 Patch8:		zlib-1.2.8-minizip-include.patch
 # (tpg) does this is still needed ?
 #Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
-# From https://github.com/madler/zlib/commit/f9694097dd69354b03cb8af959094c7f260db0a1.patch
-Patch10:	zlib-1.2.11-fix-deflateParams-usage.patch
 Patch11:	zlib-1.2.11-speedup-by-using-memcmp.patch
 %ifarch aarch64
 # general aarch64 optimizations
