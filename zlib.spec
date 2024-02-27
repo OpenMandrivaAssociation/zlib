@@ -19,7 +19,7 @@
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
-Version:	1.3
+Version:	1.3.1
 Release:	1
 Group:		System/Libraries
 License:	BSD
