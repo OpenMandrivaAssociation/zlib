@@ -23,7 +23,7 @@ Version:	1.3.1
 Release:	1
 Group:		System/Libraries
 License:	BSD
-Url:		http://www.gzip.org/zlib/
+Url:		https://www.gzip.org/zlib/
 Source0:	http://www.zlib.net/%{name}-%{version}.tar.xz
 Source1:	zlib.rpmlintrc
 Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
