@@ -46,6 +46,7 @@ Patch23:	0002-Porting-optimized-longest_match.patch
 Patch24:	0003-arm64-specific-build-patch.patch
 %endif
 
+BuildRequires:	make
 BuildRequires:	util-linux
 BuildRequires:	kernel-headers
 
