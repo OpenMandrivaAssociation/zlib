@@ -19,24 +19,24 @@
 
 Summary:	The zlib compression and decompression library
 Name:		zlib
-Version:	1.3.1
+Version:	1.3.2
 Release:	1
 Group:		System/Libraries
 License:	BSD
 Url:		https://www.gzip.org/zlib/
 Source0:	http://www.zlib.net/%{name}-%{version}.tar.xz
 Source1:	zlib.rpmlintrc
-Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
+# dropped (no longer applies): Patch2:		zlib-1.2.7-get-rid-of-duplicate-pkgconfig-lib-search-path.patch
 # https://github.com/madler/zlib/pull/210
-Patch6:		zlib-1.2.5-minizip-fixuncrypt.patch
+# dropped (no longer applies): Patch6:		zlib-1.2.5-minizip-fixuncrypt.patch
 # resolves: RH#844791
-Patch7:		zlib-1.2.7-z-block-flush.patch
+# dropped (no longer applies): Patch7:		zlib-1.2.7-z-block-flush.patch
 # resolves: #985344
 # http://mail.madler.net/pipermail/zlib-devel_madler.net/2013-August/003081.html
-Patch8:		zlib-1.2.8-minizip-include.patch
+# dropped (no longer applies): Patch8:		zlib-1.2.8-minizip-include.patch
 # (tpg) does this is still needed ?
 #Patch9:		zlib-1.2.8-rsync-Z_INSERT_ONLY.patch
-Patch11:	zlib-1.2.11-speedup-by-using-memcmp.patch
+# dropped (no longer applies): Patch11:	zlib-1.3.2-speedup-by-using-memcmp.patch
 %ifarch aarch64
 # general aarch64 optimizations
 Patch20:	0001-Porting-inflate-using-wider-loads-and-stores.patch
